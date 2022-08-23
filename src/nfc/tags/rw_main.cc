@@ -17,6 +17,25 @@
  ******************************************************************************/
 
 /******************************************************************************
+
+ *
+ *  Copyright 2022 NXP
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ ******************************************************************************/
+
+/******************************************************************************
  *
  *  This file contains functions that interface with the NFC NCI transport.
  *  On the receive side, it routes events to the appropriate handler
@@ -287,7 +306,11 @@ tNFC_STATUS RW_SetActivatedTagType(tNFC_ACTIVATE_DEVT* p_activate_params,
                         p_activate_params->rf_tech_param.param.pf.mrti_check,
                         p_activate_params->rf_tech_param.param.pf.mrti_update);
     }
-  } else if (NFC_PROTOCOL_ISO_DEP == p_activate_params->protocol) {
+  } else if (NFC_PROTOCOL_ISO_DEP == p_activate_params->protocol
+#if (NXP_EXTNS == TRUE)
+             || NFC_PROTOCOL_T3BT == p_activate_params->protocol
+#endif
+    ) {
     /* ISODEP/4A,4B- NFC-A or NFC-B */
     if ((p_activate_params->rf_tech_param.mode == NFC_DISCOVERY_TYPE_POLL_B) ||
         (p_activate_params->rf_tech_param.mode == NFC_DISCOVERY_TYPE_POLL_A)) {
@@ -319,3 +342,33 @@ tNFC_STATUS RW_SetActivatedTagType(tNFC_ACTIVATE_DEVT* p_activate_params,
   if (status != NFC_STATUS_OK) rw_cb.p_cback = nullptr;
   return status;
 }
+
+#if (NXP_EXTNS == TRUE)
+/*******************************************************************************
+**
+** Function         RW_SetT4tNfceeInfo
+**
+** Description      This function selects the T4t Nfcee  for Reader/Writer mode.
+**
+** Returns          tNFC_STATUS
+**
+*******************************************************************************/
+tNFC_STATUS RW_SetT4tNfceeInfo(tRW_CBACK* p_cback, uint8_t conn_id) {
+  tNFC_STATUS status = NFC_STATUS_FAILED;
+  /* Reset tag-specific area of control block */
+      LOG(ERROR) << StringPrintf("RW_SetActivatedTagType %d ",conn_id);
+
+  memset(&rw_cb.tcb, 0, sizeof(tRW_TCB));
+
+  if (p_cback != NULL) {
+    rw_cb.p_cback = p_cback;
+    status = RW_T4tNfceeInitCb();
+    if (status != NFC_STATUS_OK) {
+      rw_cb.p_cback = NULL;
+    }
+  } else {
+    rw_cb.p_cback = NULL;
+  }
+  return status;
+}
+#endif
