@@ -233,11 +233,15 @@ bool nfa_sys_is_graceful_disable(void) { return nfa_sys_cb.graceful_disable; }
 void nfa_sys_enable_subsystems(void) {
   uint8_t id;
 
-  DLOG_IF(INFO, nfc_debug_enabled)
-      << StringPrintf("nfa_sys: enabling subsystems");
-
   /* Enable all subsystems except SYS */
   for (id = NFA_ID_DM; id < NFA_ID_MAX; id++) {
+     /* Skipping not required sub module */
+    if( (id == NFA_ID_EE) || (id == NFA_ID_P2P) || (id == NFA_ID_SNEP)|| (id == NFA_ID_CE)|| (id == NFA_ID_HCI) || (id == NFA_ID_DTA)  )
+    {
+      nfa_sys_cback_notify_enable_complete(id);
+        continue;
+    }
+
     if (nfa_sys_cb.is_reg[id]) {
       if (nfa_sys_cb.reg[id]->enable != nullptr) {
         /* Subsytem has a Disable funciton. Call it now */

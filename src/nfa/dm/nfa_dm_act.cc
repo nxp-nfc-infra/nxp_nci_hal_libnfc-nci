@@ -285,6 +285,7 @@ static void nfa_dm_nfc_response_cback(tNFC_RESPONSE_EVT event,
         }
         /* Initialize NFA subsystems */
         nfa_sys_enable_subsystems();
+        (*nfa_dm_cb.p_dm_cback)(NFA_DM_ENABLE_EVT, &dm_cback_data);
       } else if (nfa_dm_cb.flags & NFA_DM_FLAGS_ENABLE_EVT_PEND) {
         /* Notify app */
         nfa_dm_cb.flags &=
