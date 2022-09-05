@@ -49,8 +49,4 @@
 #define GKI_NUM_FIXED_BUF_POOLS 4
 #endif
 
-#if (NXP_EXTNS == TRUE)
-void initializeGlobalAppDtaMode();
-#endif
-
 #endif

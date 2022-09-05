@@ -29,7 +29,6 @@ cc_library_shared {
         "android.hardware.nfc@1.0",
         "android.hardware.nfc@1.1",
         "android.hardware.nfc@1.2",
-        "vendor.nxp.nxpnfc@1.0",
         // Add for AIDL
         "android.hardware.nfc-V1-ndk",
         "libbinder_ndk",
@@ -43,7 +42,6 @@ cc_library_shared {
         "-Wall",
         "-Werror",
         "-Wimplicit-fallthrough",
-        "-DNXP_EXTNS=TRUE",
     ],
     local_include_dirs: [
         "include",
@@ -60,7 +58,6 @@ cc_library_shared {
         "nfa/p2p/*.cc",
         "nfa/rw/*.cc",
         "nfa/sys/*.cc",
-        "nfa/t4tnfcee/*.cc",
         "nfc/llcp/*.cc",
         "nfc/nci/*.cc",
         "nfc/ndef/*.cc",

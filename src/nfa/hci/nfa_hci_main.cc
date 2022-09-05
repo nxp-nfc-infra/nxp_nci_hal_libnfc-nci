@@ -163,11 +163,12 @@ void nfa_hci_ee_info_cback(tNFA_EE_DISC_STS status) {
     case NFA_EE_MODE_SET_COMPLETE:
       /*received mode set Ntf */
       if ((nfa_hci_cb.hci_state == NFA_HCI_STATE_WAIT_NETWK_ENABLE) ||
-                (nfa_hci_cb.hci_state == NFA_HCI_STATE_RESTORE_NETWK_ENABLE)) {
-              /* Discovery operation is complete, retrieve discovery result */
-          NFA_EeGetInfo(&nfa_hci_cb.num_nfcee, nfa_hci_cb.ee_info);
-          nfa_hci_enable_one_nfcee();
-        }
+          (nfa_hci_cb.hci_state == NFA_HCI_STATE_RESTORE_NETWK_ENABLE) ||
+          (nfa_hci_cb.hci_state == NFA_HCI_STATE_EE_RECOVERY)) {
+        /* Discovery operation is complete, retrieve discovery result */
+        NFA_EeGetInfo(&nfa_hci_cb.num_nfcee, nfa_hci_cb.ee_info);
+        nfa_hci_enable_one_nfcee();
+      }
       break;
     case NFA_EE_RECOVERY_INIT:
       /*NFCEE recovery in progress*/

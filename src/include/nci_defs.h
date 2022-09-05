@@ -17,25 +17,6 @@
  ******************************************************************************/
 
 /******************************************************************************
-
- *
- *  Copyright 2022 NXP
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
- ******************************************************************************/
-
-/******************************************************************************
  *
  *  This file contains the definition from NCI specification
  *
@@ -53,7 +34,7 @@
 #define NCI_MAX_PAYLOAD_SIZE 0xFE
 #define NCI_CTRL_INIT_SIZE 32  /* initial NFCC control payload size */
 #define NCI_MAX_VSC_SIZE 0xFF
-#define APPL_DTA_MODE TRUE
+#define APPL_DTA_MODE FALSE
 /* NCI header (3) + callback function pointer(8; use 8 to be safe) + HCIT (1
  * byte) */
 #define NCI_VSC_MSG_HDR_SIZE 12
@@ -110,7 +91,6 @@
 #define NCI_DEST_TYPE_NFCC 1   /* NFCC - loopback */
 #define NCI_DEST_TYPE_REMOTE 2 /* Remote NFC Endpoint */
 #define NCI_DEST_TYPE_NFCEE 3  /* NFCEE */
-#define NCI_DEST_TYPE_T4T_NFCEE 5 /* T4T NFCEE */
 
 /* builds byte0 of NCI Command and Notification packet */
 #define NCI_MSG_BLD_HDR0(p, mt, gid) \
@@ -265,10 +245,6 @@
 #define NCI_CON_CREATE_TAG_NFCEE_VAL 0x01
 
 #define NCI_CORE_PARAM_SIZE_CON_CLOSE 0x01     /* Conn ID (1 octet) */
-#if (NXP_EXTNS == TRUE)
-/* Keep the NCI configuration (if possible) and perform NCI initialization. */
-#define NCI_RESET_TYPE_KEEP_CFG 0x00
-#endif
 
 /* Keep the NCI configuration and perform NCI initialization. */
 #define NCI_RESET_TYPE_KEEP_CFG 0x00
@@ -379,14 +355,6 @@ typedef uint8_t tNCI_INTF_TYPE;
 #define NCI_PROTOCOL_T5T 0x06
 #define NCI_PROTOCOL_ISO_DEP 0x04
 #define NCI_PROTOCOL_NFC_DEP 0x05
-/**********************************************
- * Proprietary Protocols
- **********************************************/
-#if (NXP_EXTNS == TRUE)
-#ifndef NCI_PROTOCOL_T3BT
-#define NCI_PROTOCOL_T3BT 0x8b
-#endif
-#endif
 
 /* Discovery Types/Detected Technology and Mode */
 #define NCI_DISCOVERY_TYPE_POLL_A 0x00

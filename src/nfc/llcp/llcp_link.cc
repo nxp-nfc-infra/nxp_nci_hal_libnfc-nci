@@ -1309,26 +1309,18 @@ static void llcp_link_proc_rx_data(NFC_HDR* p_msg) {
         }
 
         /* check if length of information is bigger than link MIU */
-
-#if (NXP_EXTNS == TRUE)
-        DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("frame_error:0x%x,"
-          "info_length:0x%x ptype:0x%x", frame_error, info_length, ptype);
-        /* check if length of information is bigger than link MIU */
-        if ((!frame_error) && (info_length > llcp_cb.lcb.local_link_miu)
-          && (ptype == LLCP_PDU_UI_TYPE)) {
-#else
-        /* check if length of information is bigger than link MIU */
         if ((!frame_error) && (info_length > llcp_cb.lcb.local_link_miu)) {
-#endif
           LOG(ERROR) << StringPrintf(
               "Received exceeding MIU (%d): got %d bytes SDU",
               llcp_cb.lcb.local_link_miu, info_length);
+
           frame_error = true;
         } else {
           DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf(
               "DSAP:0x%x, PTYPE:%s (0x%x), "
               "SSAP:0x%x",
               dsap, llcp_pdu_type(ptype).c_str(), ptype, ssap);
+
           if (ptype == LLCP_PDU_SYMM_TYPE) {
             if (info_length > 0) {
               LOG(ERROR) << StringPrintf(
