@@ -33,6 +33,10 @@
 #include "nfa_ee_int.h"
 #include "nfa_hci_int.h"
 #include "nfc_int.h"
+#if (NXP_EXTNS == TRUE)
+#include "nfa_nfcee_int.h"
+#include "nfc_config.h"
+#endif
 
 using android::base::StringPrintf;
 
@@ -109,6 +113,11 @@ static void nfa_ee_report_discover_req_evt(void);
 static void nfa_ee_build_discover_req_evt(tNFA_EE_DISCOVER_REQ* p_evt_data);
 void nfa_ee_check_set_routing(uint16_t new_size, int* p_max_len, uint8_t* p,
                               int* p_cur_offset);
+
+#if (NXP_EXTNS == TRUE)
+static void nfa_ee_add_t4tnfcee_aid(uint8_t* p, int* cur_offset);
+#endif
+
 /*******************************************************************************
 **
 ** Function         nfa_ee_trace_aid
@@ -752,9 +761,11 @@ void nfa_ee_report_event(tNFA_EE_CBACK* p_cback, tNFA_EE_EVT event,
 **
 *******************************************************************************/
 void nfa_ee_start_timer(void) {
+#if(NXP_EXTNS != TRUE)
   if (nfa_dm_is_active())
     nfa_sys_start_timer(&nfa_ee_cb.timer, NFA_EE_ROUT_TIMEOUT_EVT,
                         NFA_EE_ROUT_TIMEOUT_VAL);
+#endif
 }
 
 /*******************************************************************************
@@ -1968,6 +1979,15 @@ void nfa_ee_nci_disc_ntf(tNFA_EE_MSG* p_data) {
       }
     }
 
+#if (NXP_EXTNS == TRUE)
+    if (p_ee->nfcee_id == T4TNFCEE_TARGET_HANDLE) {
+      nfa_t4tnfcee_set_ee_cback(p_cb);
+      p_info = &evt_data.new_ee;
+      p_info->ee_handle = (tNFA_HANDLE)p_cb->nfcee_id;
+      p_info->ee_status = p_cb->ee_status;
+      nfa_ee_report_event(p_cb->p_ee_cback, NFA_EE_DISCOVER_EVT, &evt_data);
+    }
+#endif
     if ((nfa_ee_cb.p_ee_disc_cback == nullptr) && (notify_new_ee == true)) {
       if (nfa_dm_is_active() && (p_cb->ee_status != NFA_EE_STATUS_REMOVED)) {
         /* report this NFA_EE_NEW_EE_EVT only after NFA_DM_ENABLE_EVT is
@@ -2449,6 +2469,13 @@ void nfa_ee_nci_disc_req_ntf(tNFA_EE_MSG* p_data) {
                  NFC_DISCOVERY_TYPE_LISTEN_B_PRIME) {
         p_cb->lbp_protocol = p_cbk->info[xx].protocol;
       }
+      #if (NXP_EXTNS == TRUE)
+      if (p_cb->nfcee_id == T4TNFCEE_TARGET_HANDLE) {
+        tNFA_EE_CBACK_DATA nfa_ee_cback_data = {0};
+        nfa_ee_report_event(p_cb->p_ee_cback, NFA_EE_DISCOVER_REQ_EVT,
+                            &nfa_ee_cback_data);
+      }
+      #endif
       DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf(
           "nfcee_id=0x%x ee_status=0x%x ecb_flags=0x%x la_protocol=0x%x "
           "la_protocol=0x%x la_protocol=0x%x",
@@ -2808,6 +2835,9 @@ void nfa_ee_lmrt_to_nfcc(__attribute__((unused)) tNFA_EE_MSG* p_data) {
   max_len = (NFC_GetLmrtSize() > NFA_EE_ROUT_BUF_SIZE) ? NFC_GetLmrtSize()
                                                        : NFA_EE_ROUT_BUF_SIZE;
   p = (uint8_t*)GKI_getbuf(max_len);
+  #if (NXP_EXTNS == TRUE)
+  if (nfa_t4tnfcee_is_enabled()) nfa_ee_add_t4tnfcee_aid(p, &cur_offset);
+  #endif
   if (p == nullptr) {
     LOG(ERROR) << StringPrintf("no buffer to send routing info.");
     tNFA_EE_CBACK_DATA nfa_ee_cback_data;
@@ -2909,3 +2939,47 @@ void nfa_ee_update_rout(void) {
       << StringPrintf("nfa_ee_update_rout ee_cfg_sts:0x%02x ee_cfged:0x%02x",
                       nfa_ee_cb.ee_cfg_sts, nfa_ee_cb.ee_cfged);
 }
+
+#if(NXP_EXTNS == TRUE)
+/*******************************************************************************
+**
+** Function         nfa_ee_add_t4tnfcee_aid
+**
+** Description      Adds t4t Nfcee AID at the beginning top of routing table
+**
+** Returns          none
+**
+*******************************************************************************/
+static void nfa_ee_add_t4tnfcee_aid(uint8_t* p, int* cur_offset) {
+  const uint8_t t4tNfcee[] = {0xD2, 0x76, 0x00, 0x00, 0x85, 0x01, 0x01};
+  int t4tNfceeRoute = T4TNFCEE_TARGET_HANDLE;
+  unsigned long t4tNfceePower = 0x00;
+  uint8_t* pp;
+  t4tNfceePower =
+      NfcConfig::getUnsigned(NAME_DEFAULT_T4TNFCEE_AID_POWER_STATE, 0x00);
+  if (!t4tNfceePower) {
+    DLOG_IF(INFO, nfc_debug_enabled)
+        << StringPrintf("t4tNfceePower not found; taking default value");
+    t4tNfceePower = (NCI_ROUTE_PWR_STATE_ON | NCI_ROUTE_PWR_STATE_SWITCH_OFF);
+    t4tNfceePower |= NCI_ROUTE_PWR_STATE_SCREEN_ON_LOCK();
+    t4tNfceePower |= NCI_ROUTE_PWR_STATE_SCREEN_OFF_UNLOCK();
+    t4tNfceePower |= NCI_ROUTE_PWR_STATE_SCREEN_OFF_LOCK();
+  } else {
+    t4tNfceePower = T4TNFCEE_AID_POWER_STATE;
+  }
+
+  /*Number of Entries. Current Entry 1.
+   *Later same values will be incremented with required number of entries
+   */
+  *p = 0x01;
+  pp = p + 1;
+  *pp++ = NFC_ROUTE_TAG_AID;
+  *pp++ = sizeof(t4tNfcee) + 2;  // sizeof(t4tNfcee) + size(t4tNfceeRoute):1byte
+                                 // + size(t4tNfceePower):1byte
+  *pp++ = t4tNfceeRoute;
+  *pp++ = (uint8_t)t4tNfceePower;
+  memcpy(pp, t4tNfcee, sizeof(t4tNfcee));
+
+  *cur_offset = (uint8_t)(pp - (p + 1)) + sizeof(t4tNfcee);
+}
+#endif

@@ -17,6 +17,25 @@
  ******************************************************************************/
 
 /******************************************************************************
+
+ *
+ *  Copyright 2022 NXP
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ ******************************************************************************/
+
+/******************************************************************************
  *
  *  This file contains the Near Field Communication (NFC) Reader/Writer mode
  *  related API function external definitions.
@@ -36,6 +55,9 @@
 #define RW_T3T_FIRST_EVT 0x60
 #define RW_T4T_FIRST_EVT 0x80
 #define RW_I93_FIRST_EVT 0xA0
+#if (NXP_EXTNS == TRUE)
+#define RW_T3BT_FIRST_EVT 0xB0
+#endif
 #define RW_MFC_FIRST_EVT 0xC0
 
 enum {
@@ -124,6 +146,10 @@ enum {
   RW_I93_RAW_FRAME_EVT,        /* Response of raw frame sent         */
   RW_I93_INTF_ERROR_EVT,       /* RF Interface error event           */
   RW_I93_MAX_EVT,
+#if (NXP_EXTNS == TRUE)
+  RW_T3BT_RAW_READ_CPLT_EVT,
+  RW_T3BT_MAX_EVT,
+#endif
 
   /* Mifare Classic tag events for tRW_CBACK */
   RW_MFC_NDEF_DETECT_EVT =
@@ -274,6 +300,10 @@ typedef union {
 } tRW_DATA;
 
 typedef void(tRW_CBACK)(tRW_EVENT event, tRW_DATA* p_data);
+
+#if (NXP_EXTNS == TRUE)
+typedef void(tNFA_T4TNFCEE_CC_INFO)(uint8_t* ccInfo, uint16_t ccLen);
+#endif
 
 /*******************************************************************************
 **
@@ -1367,6 +1397,9 @@ extern tNFC_STATUS RW_SendRawFrame(uint8_t* p_raw_data, uint16_t data_len);
 *******************************************************************************/
 extern tNFC_STATUS RW_SetActivatedTagType(tNFC_ACTIVATE_DEVT* p_activate_params,
                                           tRW_CBACK* p_cback);
+#if (NXP_EXTNS == TRUE)
+extern tNFC_STATUS RW_T3BtGetPupiID();
+#endif
 /*******************************************************************************
 **
 ** Function         RW_MfcDetectNDef
@@ -1427,5 +1460,139 @@ extern tNFC_STATUS RW_MfcFormatNDef(void);
 **
 *******************************************************************************/
 extern tNFC_STATUS RW_MfcWriteNDef(uint16_t buf_len, uint8_t* p_buffer);
+
+#if (NXP_EXTNS == TRUE)
+/*******************************************************************************
+**
+** Function         RW_T4tNfceeSelectApplication
+**
+** Description      Selects T4T application using T4T AID
+**
+** Returns          NFC_STATUS_OK if success else NFC_STATUS_FAILED
+**
+*******************************************************************************/
+extern tNFC_STATUS RW_T4tNfceeSelectApplication(void);
+
+/*******************************************************************************
+**
+** Function         RW_T4tNfceeUpdateCC
+**
+** Description      Updates the T4T data structures with CC info
+**
+** Returns          None
+**
+*******************************************************************************/
+void RW_T4tNfceeUpdateCC(uint8_t *ccInfo);
+
+/*******************************************************************************
+**
+** Function         RW_T4tNfceeSelectFile
+**
+** Description      Selects T4T Nfcee File
+**
+** Returns          NFC_STATUS_OK if success
+**
+*******************************************************************************/
+extern tNFC_STATUS RW_T4tNfceeSelectFile(uint16_t fileId);
+
+/*******************************************************************************
+**
+** Function         RW_T4tNfceeReadDataLen
+**
+** Description      Reads proprietary data Len
+**
+** Returns          NFC_STATUS_OK if success
+**
+*******************************************************************************/
+extern tNFC_STATUS RW_T4tNfceeReadDataLen();
+
+/*******************************************************************************
+**
+** Function         RW_T4tNfceeStartUpdateFile
+**
+** Description      starts writing data to the currently selected file
+**
+** Returns          NFC_STATUS_OK if success
+**
+*******************************************************************************/
+extern tNFC_STATUS RW_T4tNfceeStartUpdateFile(uint16_t length, uint8_t* p_data);
+
+/*******************************************************************************
+**
+** Function         RW_T4tNfceeUpdateFile
+**
+** Description      writes requested data to the currently selected file
+**
+** Returns          NFC_STATUS_OK if success else NFC_STATUS_FAILED
+**
+*******************************************************************************/
+extern tNFC_STATUS RW_T4tNfceeUpdateFile();
+
+/*******************************************************************************
+**
+** Function         RW_T4tIsUpdateComplete
+**
+** Description      Return true if no more data to write
+**
+** Returns          true/false
+**
+*******************************************************************************/
+extern bool RW_T4tIsUpdateComplete(void);
+
+/*******************************************************************************
+**
+** Function         RW_T4tIsReadComplete
+**
+** Description      Return true if no more data to be read
+**
+** Returns          true/false
+**
+*******************************************************************************/
+extern bool RW_T4tIsReadComplete(void);
+
+/*******************************************************************************
+**
+** Function         RW_T4tNfceeReadFile
+**
+** Description      Reads T4T Nfcee File
+**
+** Returns          NFC_STATUS_OK if success
+**
+*******************************************************************************/
+extern tNFC_STATUS RW_T4tNfceeReadFile(uint16_t offset,uint16_t Readlen);
+
+/*******************************************************************************
+**
+** Function         RW_T4tNfceeReadPendingData
+**
+** Description      Reads pending data from T4T Nfcee File
+**
+** Returns          NFC_STATUS_OK if success else NFC_STATUS_FAILED
+**
+*******************************************************************************/
+extern tNFC_STATUS RW_T4tNfceeReadPendingData();
+
+/*******************************************************************************
+**
+** Function         RW_T4tNfceeUpdateNlen
+**
+** Description      writes requested length to the file
+**
+** Returns          NFC_STATUS_OK if success
+**
+*******************************************************************************/
+extern tNFC_STATUS RW_T4tNfceeUpdateNlen(uint16_t len);
+
+/*******************************************************************************
+**
+** Function         RW_SetT4tNfceeInfo
+**
+** Description      This function sets callbacks for T4t operations.
+**
+** Returns          tNFC_STATUS
+**
+*******************************************************************************/
+extern tNFC_STATUS RW_SetT4tNfceeInfo(tRW_CBACK* p_cback, uint8_t conn_id);
+#endif
 
 #endif /* RW_API_H */

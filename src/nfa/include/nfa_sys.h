@@ -45,6 +45,9 @@ enum {
 #if (NFA_DTA_INCLUDED == TRUE)
   NFA_ID_DTA, /* Device Test Application sub-system  */
 #endif
+#if (NXP_EXTNS == TRUE)
+  NFA_ID_T4TNFCEE, /* t4T Nfcee sub-system  */
+#endif
   NFA_ID_MAX
 };
 typedef uint8_t tNFA_SYS_ID;

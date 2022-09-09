@@ -17,6 +17,25 @@
  ******************************************************************************/
 
 /******************************************************************************
+
+ *
+ *  Copyright 2022 NXP
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ ******************************************************************************/
+
+/******************************************************************************
  *
  *  This file contains the Near Field Communication (NFC) API function
  *  external definitions.
@@ -78,7 +97,15 @@
 #define NFC_STATUS_EE_PROTOCOL_ERR NCI_STATUS_EE_PROTOCOL_ERR
 /* EE Timeout           */
 #define NFC_STATUS_EE_TIMEOUT NCI_STATUS_EE_TIMEOUT
-
+#if (NXP_EXTNS == TRUE)
+/**********************************************
+ * NFC Config Parameter IDs defined by NXP NFC
+ **********************************************/
+#define NXP_NFC_SET_CONFIG_PARAM_EXT \
+  ((unsigned char)0xA0) /* NXP NFC set config extension ID 0*/
+#define NXP_NFC_SET_CONFIG_PARAM_EXT_ID1 \
+  ((unsigned char)0xA1) /* NXP NFC set config extension ID 1*/
+#endif
 /* 0xE0 ~0xFF are proprietary status codes */
 /* Command started successfully                     */
 #define NFC_STATUS_CMD_STARTED 0xE3
@@ -385,6 +412,9 @@ extern uint8_t NFC_GetNCIVersion();
 /* NFCDEP/LLCP - NFC-A or NFC-F       */
 #define NFC_PROTOCOL_NFC_DEP NCI_PROTOCOL_NFC_DEP
 #define NFC_PROTOCOL_MIFARE NCI_PROTOCOL_MIFARE
+#if(NXP_EXTNS == TRUE)
+#define NFC_PROTOCOL_T3BT NCI_PROTOCOL_T3BT
+#endif
 #define NFC_PROTOCOL_ISO15693 NCI_PROTOCOL_15693
 #define NFC_PROTOCOL_B_PRIME NCI_PROTOCOL_B_PRIME
 #define NFC_PROTOCOL_KOVIO NCI_PROTOCOL_KOVIO
@@ -566,11 +596,18 @@ typedef tNFC_STATUS tNFC_START_DEVT;
 typedef tNCI_RF_PA_PARAMS tNFC_RF_PA_PARAMS;
 #define NFC_MAX_SENSB_RES_LEN NCI_MAX_SENSB_RES_LEN
 #define NFC_NFCID0_MAX_LEN 4
+#if (NXP_EXTNS == TRUE)
+#define NFC_PUPIID_MAX_LEN 8
+#endif
 typedef struct {
   uint8_t sensb_res_len; /* Length of SENSB_RES Response (Byte 2 - Byte 12 or
                             13) Available after Technology Detection */
   uint8_t sensb_res[NFC_MAX_SENSB_RES_LEN]; /* SENSB_RES Response (ATQ) */
   uint8_t nfcid0[NFC_NFCID0_MAX_LEN];
+#if (NXP_EXTNS == TRUE)
+  uint8_t pupiid_len;
+  uint8_t pupiid[NFC_PUPIID_MAX_LEN];
+#endif
 } tNFC_RF_PB_PARAMS;
 
 #define NFC_MAX_SENSF_RES_LEN NCI_MAX_SENSF_RES_LEN
@@ -808,6 +845,10 @@ typedef void(tNFC_CONN_CBACK)(uint8_t conn_id, tNFC_CONN_EVT event,
 #define NFC_RF_CONN_ID 0
 /* the static connection ID for HCI transport */
 #define NFC_HCI_CONN_ID 1
+
+ #if (NXP_EXTNS == TRUE)
+ #define NFC_T4TNFCEE_CONN_ID 0x05
+ #endif
 
 /*****************************************************************************
 **  EXTERNAL FUNCTION DECLARATIONS
@@ -1050,6 +1091,22 @@ extern tNFC_STATUS NFC_ConnClose(uint8_t conn_id);
 **
 *******************************************************************************/
 extern void NFC_SetStaticRfCback(tNFC_CONN_CBACK* p_cback);
+
+#if (NXP_EXTNS == TRUE)
+/*******************************************************************************
+**
+** Function         NFC_SetStaticT4tNfceeCback
+**
+** Description      This function is called to update the data callback function
+**                  to receive the data for the given connection id.
+**
+** Parameters       p_cback - the connection callback function
+**
+** Returns          Nothing
+**
+*******************************************************************************/
+void NFC_SetStaticT4tNfceeCback(tNFC_CONN_CBACK* p_cback);
+#endif
 
 /*******************************************************************************
 **

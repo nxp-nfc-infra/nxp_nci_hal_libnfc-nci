@@ -16,6 +16,25 @@
  ******************************************************************************/
 
 /******************************************************************************
+
+ *
+ *  Copyright 2022 NXP
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ ******************************************************************************/
+
+/******************************************************************************
  *
  *  This file contains the action functions for device manager discovery
  *  function.
@@ -114,7 +133,11 @@ static uint8_t nfa_dm_get_rf_discover_config(
   }
 
   /* Check polling B */
-  if (dm_disc_mask & NFA_DM_DISC_MASK_PB_ISO_DEP) {
+  if (dm_disc_mask & (NFA_DM_DISC_MASK_PB_ISO_DEP
+#if (NXP_EXTNS == TRUE)
+                      | NFA_DM_DISC_MASK_PB_T3BT
+#endif
+    )) {
     disc_params[num_params].type = NFC_DISCOVERY_TYPE_POLL_B;
     disc_params[num_params].frequency = p_nfa_dm_rf_disc_freq_cfg->pb;
     num_params++;
@@ -160,9 +183,10 @@ static uint8_t nfa_dm_get_rf_discover_config(
     }
   }
   /* Check listening A */
-  if (dm_disc_mask &
-      (NFA_DM_DISC_MASK_LA_T1T | NFA_DM_DISC_MASK_LA_T2T |
-       NFA_DM_DISC_MASK_LA_ISO_DEP | NFA_DM_DISC_MASK_LA_NFC_DEP)) {
+  if ((dm_disc_mask &
+       (NFA_DM_DISC_MASK_LA_T1T | NFA_DM_DISC_MASK_LA_T2T |
+        NFA_DM_DISC_MASK_LA_ISO_DEP | NFA_DM_DISC_MASK_LA_NFC_DEP))) {
+
     disc_params[num_params].type = NFC_DISCOVERY_TYPE_LISTEN_A;
     disc_params[num_params].frequency = 1;
     num_params++;
@@ -616,6 +640,10 @@ static tNFA_DM_DISC_TECH_PROTO_MASK nfa_dm_disc_get_disc_mask(
   } else if (NFC_DISCOVERY_TYPE_POLL_B == tech_n_mode) {
     if (protocol == NFC_PROTOCOL_ISO_DEP)
       disc_mask = NFA_DM_DISC_MASK_PB_ISO_DEP;
+#if (NXP_EXTNS == TRUE)
+    else if (protocol == NFC_PROTOCOL_T3BT)
+      disc_mask = NFA_DM_DISC_MASK_PB_T3BT;
+#endif
   } else if (NFC_DISCOVERY_TYPE_POLL_F == tech_n_mode) {
     if (protocol == NFC_PROTOCOL_T3T)
       disc_mask = NFA_DM_DISC_MASK_PF_T3T;
