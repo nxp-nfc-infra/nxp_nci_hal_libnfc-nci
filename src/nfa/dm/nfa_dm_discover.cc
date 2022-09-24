@@ -144,7 +144,7 @@ static uint8_t nfa_dm_get_rf_discover_config(
 
     if (num_params >= max_params) return num_params;
   }
-#if 0
+
   /* Check polling F */
   if (dm_disc_mask & (NFA_DM_DISC_MASK_PF_T3T | NFA_DM_DISC_MASK_PF_NFC_DEP)) {
     disc_params[num_params].type = NFC_DISCOVERY_TYPE_POLL_F;
@@ -153,7 +153,7 @@ static uint8_t nfa_dm_get_rf_discover_config(
 
     if (num_params >= max_params) return num_params;
   }
-#endif
+
   if (NFC_GetNCIVersion() == NCI_VERSION_2_0) {
     /* Check polling Active mode  */
     if (dm_disc_mask & NFA_DM_DISC_MASK_PACM_NFC_DEP) {
