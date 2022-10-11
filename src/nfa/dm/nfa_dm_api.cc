@@ -32,7 +32,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  Copyright 2018-2021 NXP
+ *  Copyright 2018-2022 NXP
  *
  ******************************************************************************/
 
@@ -1348,3 +1348,32 @@ void NFA_EnableDtamode(tNFA_eDtaModes eDtaMode) {
   appl_dta_mode_flag = 0x01;
   nfa_dm_cb.eDtaMode = eDtaMode;
 }
+#if (NXP_EXTNS == TRUE)
+/*******************************************************************************
+**
+** Function         NFA_GetMwVersion
+**
+** Description      This function provide right MW version.
+
+**
+** Returns          MW version
+**
+*******************************************************************************/
+tNFA_MW_VERSION NFA_GetMwVersion() {
+  tNFA_MW_VERSION mwVer;
+
+  mwVer.validation = (NXP_EN_PN7220 << 2);
+  mwVer.android_version = NXP_ANDROID_VER;
+  DLOG_IF(INFO, nfc_debug_enabled)
+      << StringPrintf("NFC MW Major Version: 0x%x", NFC_NXP_MW_VERSION_MAJ);
+  DLOG_IF(INFO, nfc_debug_enabled)
+      << StringPrintf("NFC MW Minor Version: 0x%x", NFC_NXP_MW_VERSION_MIN);
+  mwVer.major_version = NFC_NXP_MW_VERSION_MAJ;
+  mwVer.minor_version = NFC_NXP_MW_VERSION_MIN;
+  mwVer.rc_version = NFC_NXP_MW_RC_VERSION;
+  DLOG_IF(INFO, nfc_debug_enabled)
+      << StringPrintf("mwVer:Major=0x%x,Minor=0x%x", mwVer.major_version,
+                 mwVer.minor_version);
+  return mwVer;
+}
+#endif
