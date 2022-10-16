@@ -89,8 +89,6 @@ std::string findConfigPath() {
 }  // namespace
 
 void NfcConfig::loadConfig() {
-  LOG(INFO) << __func__
-            << "Entry";
   string config_path = findConfigPath();
   CHECK(config_path != "");
   config_.parseFromFile(config_path);
@@ -112,8 +110,6 @@ void NfcConfig::loadConfig() {
   for (auto config : configMap) {
     config_.addConfig(config.first, config.second);
   }
-  LOG(INFO) << __func__
-            << "Exit";
 }
 
 NfcConfig::NfcConfig() { loadConfig(); }

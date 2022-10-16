@@ -110,7 +110,6 @@
 #define NCI_DEST_TYPE_NFCC 1   /* NFCC - loopback */
 #define NCI_DEST_TYPE_REMOTE 2 /* Remote NFC Endpoint */
 #define NCI_DEST_TYPE_NFCEE 3  /* NFCEE */
-#define NCI_DEST_TYPE_T4T_NFCEE 5 /* T4T NFCEE */
 
 /* builds byte0 of NCI Command and Notification packet */
 #define NCI_MSG_BLD_HDR0(p, mt, gid) \
@@ -265,11 +264,6 @@
 #define NCI_CON_CREATE_TAG_NFCEE_VAL 0x01
 
 #define NCI_CORE_PARAM_SIZE_CON_CLOSE 0x01     /* Conn ID (1 octet) */
-#if (NXP_EXTNS == TRUE)
-/* Keep the NCI configuration (if possible) and perform NCI initialization. */
-#define NCI_RESET_TYPE_KEEP_CFG 0x00
-#endif
-
 /* Keep the NCI configuration and perform NCI initialization. */
 #define NCI_RESET_TYPE_KEEP_CFG 0x00
 /* Reset the NCI configuration, and perform NCI initialization. */
