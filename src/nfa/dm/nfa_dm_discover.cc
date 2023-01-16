@@ -2943,7 +2943,6 @@ bool nfa_dm_p2p_prio_logic(uint8_t event, uint8_t* p, uint8_t event_type) {
   }
 
   if (nfa_dm_cb.disc_cb.disc_state == NFA_DM_RFST_DISCOVERY) {
-    uint8_t type = 0xFF;
     uint8_t protocol = 0xFF;
     uint8_t tech_mode = 0xFF;
 
@@ -2951,7 +2950,7 @@ bool nfa_dm_p2p_prio_logic(uint8_t event, uint8_t* p, uint8_t event_type) {
 
     if (event == NCI_MSG_RF_INTF_ACTIVATED) {
       p++;  // rf_disc_id = *p++;
-      type = *p++;
+      p++;  // type = *p++;
       protocol = *p++;
       tech_mode = *p++;
     }

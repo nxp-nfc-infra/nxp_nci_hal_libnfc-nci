@@ -361,10 +361,8 @@ uint8_t nci_snd_discover_cmd(uint8_t num, tNCI_DISCOVER_PARAMS* p_param) {
   NFC_HDR* p;
   uint8_t *pp, *p_size, *p_start;
   int xx;
-  int size;
 
-  size = num * sizeof(tNCI_DISCOVER_PARAMS) + 1;
-  p = NCI_GET_CMD_BUF(size);
+  p = NCI_GET_CMD_BUF((num * sizeof(tNCI_DISCOVER_PARAMS) + 1));
   if (p == nullptr) return (NCI_STATUS_FAILED);
 
   p->event = BT_EVT_TO_NFC_NCI;
@@ -472,11 +470,8 @@ uint8_t nci_snd_discover_map_cmd(uint8_t num, tNCI_DISCOVER_MAPS* p_maps) {
   NFC_HDR* p;
   uint8_t *pp, *p_size, *p_start;
   int xx;
-  int size;
 
-  size = num * sizeof(tNCI_DISCOVER_MAPS) + 1;
-
-  p = NCI_GET_CMD_BUF(size);
+  p = NCI_GET_CMD_BUF((num * sizeof(tNCI_DISCOVER_MAPS) + 1));
   if (p == nullptr) return (NCI_STATUS_FAILED);
 
   p->event = BT_EVT_TO_NFC_NCI;

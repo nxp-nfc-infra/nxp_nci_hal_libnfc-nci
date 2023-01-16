@@ -448,6 +448,7 @@ bool nfc_ncif_process_event(NFC_HDR* p_msg) {
       p_old = nfc_cb.last_hdr;
       NCI_MSG_PRS_HDR0(p_old, old_mt, pbf, old_gid);
       old_oid = ((*p_old) & NCI_OID_MASK);
+      (void)old_mt; // To fix compilation warning
       /* make sure this is the RSP we are waiting for before updating the
        * command window */
       if ((old_gid != gid) || (old_oid != oid)) {
