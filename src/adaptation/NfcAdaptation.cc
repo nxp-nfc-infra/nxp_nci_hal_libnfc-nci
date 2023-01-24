@@ -305,25 +305,6 @@ class NfcAidlClientCallback
   tHAL_NFC_DATA_CBACK* mDataCallback;
 };
 
-#if (NXP_EXTNS == TRUE)
-class NfcDeathRecipient : public hidl_death_recipient {
- public:
-  android::sp<android::hardware::nfc::V1_0::INfc> mNfcDeathHal;
-  NfcDeathRecipient(android::sp<android::hardware::nfc::V1_0::INfc> &mHal) {
-    mNfcDeathHal = mHal;
-  }
-
-  virtual void serviceDied(
-      uint64_t /* cookie */,
-      const wp<::android::hidl::base::V1_0::IBase>& /* who */) {
-    ALOGE("NfcDeathRecipient::serviceDied - Nfc service died");
-    mNfcDeathHal->unlinkToDeath(this);
-    mNfcDeathHal = nullptr;
-    abort();
-  }
-};
-#endif
-
 /*******************************************************************************
 **
 ** Function:    NfcAdaptation::NfcAdaptation()
@@ -334,7 +315,6 @@ class NfcDeathRecipient : public hidl_death_recipient {
 **
 *******************************************************************************/
 NfcAdaptation::NfcAdaptation() {
-  mNfcHalDeathRecipient = new NfcDeathRecipient(mHal);
   memset(&mHalEntryFuncs, 0, sizeof(mHalEntryFuncs));
   mDeathRecipient = ::ndk::ScopedAIBinder_DeathRecipient(
       AIBinder_DeathRecipient_new(NfcAdaptation::HalAidlBinderDied));
@@ -765,9 +745,9 @@ void NfcAdaptation::Finalize() {
 
   NfcConfig::clear();
 
-//  if (mHal != nullptr) {
-//    mNfcHalDeathRecipient->finalize();
-//  }
+  if (mHal != nullptr) {
+    mNfcHalDeathRecipient->finalize();
+  }
   DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("%s: exit", func);
   delete this;
 }
@@ -938,7 +918,8 @@ void NfcAdaptation::InitializeHalDeviceContext() {
     LOG(INFO) << StringPrintf("%s: INfc::getService() returned %p (%s)", func,
                               mHal.get(),
                               (mHal->isRemote() ? "remote" : "local"));
-    //mNfcHalDeathRecipient = new NfcHalDeathRecipient(mHal);
+
+    mNfcHalDeathRecipient = new NfcHalDeathRecipient(mHal);
     mHal->linkToDeath(mNfcHalDeathRecipient, 0);
   }
 }
