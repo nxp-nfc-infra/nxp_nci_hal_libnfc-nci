@@ -1393,9 +1393,6 @@ extern tNFC_STATUS RW_SendRawFrame(uint8_t* p_raw_data, uint16_t data_len);
 *******************************************************************************/
 extern tNFC_STATUS RW_SetActivatedTagType(tNFC_ACTIVATE_DEVT* p_activate_params,
                                           tRW_CBACK* p_cback);
-#if (NXP_EXTNS == TRUE)
-extern tNFC_STATUS RW_T3BtGetPupiID();
-#endif
 /*******************************************************************************
 **
 ** Function         RW_MfcDetectNDef
@@ -1426,6 +1423,19 @@ extern tNFC_STATUS RW_MfcDetectNDef(void);
 *******************************************************************************/
 extern tNFC_STATUS RW_MfcReadNDef(uint8_t* p_buffer, uint16_t buf_len);
 
+#if (NXP_EXTNS == TRUE)
+/*******************************************************************************
+**
+** Function         RW_T3BtGetPupiID
+**
+** Description      This function gets the PUPI ID of T3BT tag.
+**
+** Returns          tNFC_STATUS
+**
+*******************************************************************************/
+extern tNFC_STATUS RW_T3BtGetPupiID();
+
+#endif
 /*****************************************************************************
 **
 ** Function         RW_MfcFormatNDef
