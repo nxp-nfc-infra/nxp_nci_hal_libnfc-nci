@@ -19,7 +19,7 @@
 /******************************************************************************
 
  *
- *  Copyright 2022 NXP
+ *  Copyright 2022-2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -1685,7 +1685,9 @@ void nfc_ncif_proc_reset_rsp(uint8_t* p, bool is_ntf) {
     /* clean up, if the state is OPEN
      * FW does not report reset ntf right now */
     if (status == NCI2_0_RESET_TRIGGER_TYPE_CORE_RESET_CMD_RECEIVED ||
-        status == NCI2_0_RESET_TRIGGER_TYPE_POWERED_ON) {
+        status == NCI2_0_RESET_TRIGGER_TYPE_POWERED_ON ||
+        status == NCI2_0_RESET_TRIGGER_TYPE_MODE_SWITCH_TO_NFC_FORUM ||
+        status == NCI2_0_RESET_TRIGGER_TYPE_MODE_SWITCH_TO_EMVCO) {
       DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf(
           "CORE_RESET_NTF Received status nfc_state : 0x%x : 0x%x", status,
           nfc_cb.nfc_state);
