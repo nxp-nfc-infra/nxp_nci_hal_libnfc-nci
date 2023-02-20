@@ -19,7 +19,7 @@
 /******************************************************************************
 
  *
- *  Copyright 2022 NXP
+ *  Copyright 2022-2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -154,6 +154,8 @@
 /* CORE_RESET_NTF reset trigger type*/
 #define NCI2_0_RESET_TRIGGER_TYPE_POWERED_ON 0x01
 #define NCI2_0_RESET_TRIGGER_TYPE_CORE_RESET_CMD_RECEIVED 0x02
+#define NCI2_0_RESET_TRIGGER_TYPE_MODE_SWITCH_TO_NFC_FORUM 0xA8
+#define NCI2_0_RESET_TRIGGER_TYPE_MODE_SWITCH_TO_EMVCO 0xA9
 
 /* Status Codes */
 #define NCI_STATUS_OK 0x00
