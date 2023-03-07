@@ -19,7 +19,7 @@
 /******************************************************************************
 
  *
- *  Copyright 2022 NXP
+ *  Copyright 2022-2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -186,6 +186,10 @@ typedef uint8_t tNFA_PROTOCOL_MASK;
 #define NFA_DM_NFCC_TRANSPORT_ERR_EVT 7
 /* Result of NFA_SetPowerSubStateForScreenState */
 #define NFA_DM_SET_POWER_SUB_STATE_EVT 11
+#if (NXP_EXTNS == TRUE)
+/* NFC HAL Died */
+#define NFA_DM_NFC_HAL_BINDER_DIED_EVT 12
+#endif
 /* T1T HR length            */
 #define NFA_T1T_HR_LEN T1T_HR_LEN
 /* Max UID length of T1/T2  */

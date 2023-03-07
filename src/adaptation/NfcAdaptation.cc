@@ -20,7 +20,7 @@
  *
  *  The original Work has been changed by NXP
  *
- *  Copyright 2022 NXP
+ *  Copyright 2022-2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -219,6 +219,12 @@ class NfcHalDeathRecipient : public hidl_death_recipient {
     ALOGE(
         "NfcHalDeathRecipient::serviceDied - Nfc-Hal service died. Killing "
         "NfcService");
+#if (NXP_EXTNS == TRUE)
+    if (nfc_cb.p_resp_cback) {
+      (*nfc_cb.p_resp_cback)(NFC_NFC_HAL_BINDER_DIED_REVT, nullptr);
+      nfc_cb.p_resp_cback = nullptr;
+    }
+#endif
     if (mNfcDeathHal) {
       mNfcDeathHal->unlinkToDeath(this);
     }
@@ -744,12 +750,18 @@ void NfcAdaptation::Finalize() {
   GKI_shutdown();
 
   NfcConfig::clear();
-
+#if (NXP_EXTNS == TRUE)
+  /* if NfcAdaptation object is deleted, it is not possible to listen for Nfc
+   * Hal died always. artf1039993 to revert this change later */
+  DLOG_IF(INFO, nfc_debug_enabled)
+      << StringPrintf("%s: exit not deleting", func);
+#else
   if (mHal != nullptr) {
     mNfcHalDeathRecipient->finalize();
   }
   DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("%s: exit", func);
   delete this;
+#endif
 }
 
 void NfcAdaptation::FactoryReset() {
