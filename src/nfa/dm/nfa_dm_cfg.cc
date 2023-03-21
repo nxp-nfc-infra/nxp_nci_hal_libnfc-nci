@@ -17,6 +17,25 @@
  ******************************************************************************/
 
 /******************************************************************************
+
+ *
+ *  Copyright 2023 NXP
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ ******************************************************************************/
+
+/******************************************************************************
  *
  *  This file contains compile-time configurable constants for NFA modules
  *
@@ -54,7 +73,12 @@ const tNFA_DM_DISC_FREQ_CFG nfa_dm_rf_disc_freq_cfg = {
     1, /* Frequency for Proprietary Technology/Kovio   */
     1, /* Frequency for NFC Technology A active mode   */
     1, /* Frequency for NFC Technology F active mode   */
-    1  /* Frequency for NFC Technology active mode     */
+#if (NXP_EXTNS == TRUE)
+    1, /* Frequency for NFC Technology active mode     */
+    1  /* Frequency for Proprietary Technology/VAS     */
+#else
+    1 /* Frequency for NFC Technology active mode     */
+#endif
 };
 
 tNFA_DM_DISC_FREQ_CFG* p_nfa_dm_rf_disc_freq_cfg =
