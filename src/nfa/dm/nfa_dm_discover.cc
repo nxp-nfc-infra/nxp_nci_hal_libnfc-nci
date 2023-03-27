@@ -18,7 +18,7 @@
 /******************************************************************************
 
  *
- *  Copyright 2022-2023 NXP
+ *  Copyright 2022 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -154,17 +154,6 @@ static uint8_t nfa_dm_get_rf_discover_config(
     if (num_params >= max_params) return num_params;
   }
 
-#if (NXP_EXTNS == TRUE)
-  if (dm_disc_mask & NFA_DM_DISC_MASK_P_VAS) {
-    disc_params[num_params].type = NFC_DISCOVERY_TYPE_POLL_VAS;
-    disc_params[num_params].frequency = p_nfa_dm_rf_disc_freq_cfg->vas;
-    num_params++;
-
-    if (num_params >= max_params)
-      return num_params;
-  }
-#endif
-
   if (NFC_GetNCIVersion() == NCI_VERSION_2_0) {
     /* Check polling Active mode  */
     if (dm_disc_mask & NFA_DM_DISC_MASK_PACM_NFC_DEP) {
@@ -258,8 +247,7 @@ static uint8_t nfa_dm_get_rf_discover_config(
 
     if (num_params >= max_params) return num_params;
   }
-#if (NXP_EXTNS == TRUE)
-#if 0
+
   /* B PRIME POLLING is not supported */
   /* Check polling B' */
   if (dm_disc_mask & NFA_DM_DISC_MASK_P_B_PRIME) {
@@ -269,8 +257,6 @@ static uint8_t nfa_dm_get_rf_discover_config(
 
     if (num_params >= max_params) return num_params;
   }
-#endif
-#endif
 
 #if 0
   /* KOVIO POLLING is not supported */
