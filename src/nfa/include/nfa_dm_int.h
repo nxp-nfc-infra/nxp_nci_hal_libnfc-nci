@@ -19,7 +19,7 @@
 /******************************************************************************
 
  *
- *  Copyright 2022-2023 NXP
+ *  Copyright 2022 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -304,9 +304,6 @@ typedef uint8_t tNFA_DM_RF_DISC_EVT;
 #define NFA_DM_DISC_MASK_PB_ISO_DEP 0x00000010
 #define NFA_DM_DISC_MASK_PF_T3T 0x00000020
 #define NFA_DM_DISC_MASK_PF_NFC_DEP 0x00000040
-#if (NXP_EXTNS == TRUE)
-#define NFA_DM_DISC_MASK_P_VAS 0x00000080
-#endif
 #define NFA_DM_DISC_MASK_P_T5T 0x00000100
 #define NFA_DM_DISC_MASK_P_B_PRIME 0x00000200
 #define NFA_DM_DISC_MASK_P_KOVIO 0x00000400

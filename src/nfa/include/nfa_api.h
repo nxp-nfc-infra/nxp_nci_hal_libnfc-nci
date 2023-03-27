@@ -138,9 +138,6 @@ typedef uint8_t tNFA_PMID;
 #define NFA_TECHNOLOGY_MASK_A_ACTIVE 0x40
 /* NFC Technology F active mode */
 #define NFA_TECHNOLOGY_MASK_F_ACTIVE 0x80
-#if (NXP_EXTNS == TRUE)
-#define NFA_TECHNOLOGY_MASK_VAS 0x70 /* Proprietary Technology       */
-#endif
 /* All supported technologies   */
 typedef uint8_t tNFA_TECHNOLOGY_MASK;
 
@@ -590,9 +587,6 @@ typedef struct {
   uint8_t paa;  /* Frequency for NFC Technology A active mode   */
   uint8_t pfa;  /* Frequency for NFC Technology F active mode   */
   uint8_t pacm; /* Frequency for NFC Technology active mode     */
-#if (NXP_EXTNS == TRUE)
-  uint8_t vas; /* Frequency for Proprietary Technology/VAS     */
-#endif
 } tNFA_DM_DISC_FREQ_CFG;
 
 /* definitions for tNFA_DM_CFG.presence_check_option */
