@@ -18,7 +18,7 @@
 /******************************************************************************
 
  *
- *  Copyright 2022 NXP
+ *  Copyright 2022-2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -247,7 +247,7 @@ static uint8_t nfa_dm_get_rf_discover_config(
 
     if (num_params >= max_params) return num_params;
   }
-
+#if (NXP_EXTNS != TRUE)
   /* B PRIME POLLING is not supported */
   /* Check polling B' */
   if (dm_disc_mask & NFA_DM_DISC_MASK_P_B_PRIME) {
@@ -257,7 +257,7 @@ static uint8_t nfa_dm_get_rf_discover_config(
 
     if (num_params >= max_params) return num_params;
   }
-
+#endif
 #if 0
   /* KOVIO POLLING is not supported */
   /* Check polling KOVIO */
