@@ -110,6 +110,7 @@
 #define NCI_DEST_TYPE_NFCC 1   /* NFCC - loopback */
 #define NCI_DEST_TYPE_REMOTE 2 /* Remote NFC Endpoint */
 #define NCI_DEST_TYPE_NFCEE 3  /* NFCEE */
+#define NCI_DEST_TYPE_T4T_NFCEE 5 /* T4T NFCEE */
 
 /* builds byte0 of NCI Command and Notification packet */
 #define NCI_MSG_BLD_HDR0(p, mt, gid) \

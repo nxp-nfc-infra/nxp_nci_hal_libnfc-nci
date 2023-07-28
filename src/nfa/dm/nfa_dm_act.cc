@@ -67,6 +67,9 @@ using android::base::StringPrintf;
 
 extern bool nfc_debug_enabled;
 
+#if (NXP_EXTNS == TRUE)
+extern void nfa_t4tnfcee_deinit(void);
+#endif
 /* This is the timeout value to guarantee disable is performed within reasonable
  * amount of time */
 #ifndef NFA_DM_DISABLE_TIMEOUT_VAL
@@ -524,6 +527,9 @@ bool nfa_dm_disable(tNFA_DM_MSG* p_data) {
                         NFA_DM_DISABLE_TIMEOUT_VAL);
   }
 
+#if (NXP_EXTNS == TRUE)
+  nfa_t4tnfcee_deinit();
+#endif
   /* Disable all subsystems other than DM (DM will be disabled after all  */
   /* the other subsystem have been disabled)                              */
   nfa_sys_disable_subsystems(p_data->disable.graceful);
