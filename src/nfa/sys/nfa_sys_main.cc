@@ -235,13 +235,16 @@ void nfa_sys_enable_subsystems(void) {
 
   /* Enable all subsystems except SYS */
   for (id = NFA_ID_DM; id < NFA_ID_MAX; id++) {
+#if (NXP_EXTNS == TRUE)
      /* Skipping not required sub module */
-    if( (id == NFA_ID_EE) || (id == NFA_ID_P2P) || (id == NFA_ID_SNEP)|| (id == NFA_ID_CE)|| (id == NFA_ID_HCI) || (id == NFA_ID_DTA)  )
+    if(nfcFL.chipType != pn7160) {
+    if( (id == NFA_ID_EE) || (id == NFA_ID_P2P) || (id == NFA_ID_SNEP)|| (id == NFA_ID_HCI) || (id == NFA_ID_DTA)  )
     {
       nfa_sys_cback_notify_enable_complete(id);
         continue;
     }
-
+}
+#endif
     if (nfa_sys_cb.is_reg[id]) {
       if (nfa_sys_cb.reg[id]->enable != nullptr) {
         /* Subsytem has a Disable funciton. Call it now */

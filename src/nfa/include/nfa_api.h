@@ -51,7 +51,9 @@
 #include "nfc_target.h"
 #include "rw_api.h"
 #include "tags_defs.h"
-
+#if(NXP_EXTNS == TRUE)
+#include "Nxp_Features.h"
+#endif
 /*****************************************************************************
 **  Constants and data types
 *****************************************************************************/
@@ -189,6 +191,7 @@ typedef uint8_t tNFA_PROTOCOL_MASK;
 #if (NXP_EXTNS == TRUE)
 /* NFC HAL Died */
 #define NFA_DM_NFC_HAL_BINDER_DIED_EVT 12
+typedef uint8_t tEnableChip;
 #endif
 /* T1T HR length            */
 #define NFA_T1T_HR_LEN T1T_HR_LEN
@@ -1426,6 +1429,18 @@ extern tNFA_STATUS NFA_SetPowerSubStateForScreenState(uint8_t ScreenState);
 **
 *******************************************************************************/
 extern tNFA_MW_VERSION NFA_GetMwVersion();
+
+/*******************************************************************************
+**
+** Function:        NFA_GetChipVersion
+**
+** Description:     This function gets the Chip Version
+**
+** Returns:         First 8 bit Major Version
+**                  Last 8 bit Minor Version
+**
+*******************************************************************************/
+extern tNFC_chipType NFA_GetChipVersion();
 
 #endif
 

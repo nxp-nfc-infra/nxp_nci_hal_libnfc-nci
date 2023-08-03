@@ -61,7 +61,6 @@ const uint8_t nfa_ee_tech_mask_list[NFA_EE_NUM_TECH] = {
 
 const uint8_t nfa_ee_tech_list[NFA_EE_NUM_TECH] = {
     NFC_RF_TECHNOLOGY_A, NFC_RF_TECHNOLOGY_B, NFC_RF_TECHNOLOGY_F};
-
 /* the following 2 tables convert the protocol mask in API and control block to
  * the command for NFCC */
 #define NFA_EE_NUM_PROTO 5
@@ -88,7 +87,6 @@ static void add_route_aid_tlv(uint8_t** pp, uint8_t* pa, uint8_t nfcee_id,
   memcpy(*pp, pa, len);
   *pp += len;
 }
-
 static void add_route_sys_code_tlv(uint8_t** p_buff, uint8_t* p_sys_code_cfg,
                                    uint8_t sys_code_rt_loc,
                                    uint8_t sys_code_pwr_cfg) {
@@ -100,7 +98,6 @@ static void add_route_sys_code_tlv(uint8_t** p_buff, uint8_t* p_sys_code_cfg,
   memcpy(*p_buff, p_sys_code_cfg, NFA_EE_SYSTEM_CODE_LEN);
   *p_buff += NFA_EE_SYSTEM_CODE_LEN;
 }
-
 const uint8_t nfa_ee_proto_mask_list[NFA_EE_NUM_PROTO] = {
     NFA_PROTOCOL_MASK_T1T, NFA_PROTOCOL_MASK_T2T, NFA_PROTOCOL_MASK_T3T,
     NFA_PROTOCOL_MASK_ISO_DEP, NFA_PROTOCOL_MASK_NFC_DEP};
@@ -479,7 +476,6 @@ static void nfa_ee_add_aid_route_to_ecb(tNFA_EE_ECB* p_cb, uint8_t* pp,
         << StringPrintf("%s - No AID entries available", __func__);
   }
 }
-
 static void nfa_ee_add_sys_code_route_to_ecb(tNFA_EE_ECB* p_cb, uint8_t* pp,
                                              uint8_t* p, uint8_t* p_buff,
                                              int* p_cur_offset,
@@ -532,7 +528,6 @@ static void nfa_ee_add_sys_code_route_to_ecb(tNFA_EE_ECB* p_cb, uint8_t* pp,
         << StringPrintf("%s - No SC entries available", __func__);
   }
 }
-
 /*******************************************************************************
 **
 ** Function         nfa_ee_conn_cback
@@ -2649,7 +2644,7 @@ void nfa_ee_route_add_one_ecb_by_route_order(tNFA_EE_ECB* p_cb, int rout_type,
     case NCI_ROUTE_ORDER_AID: {
       nfa_ee_add_aid_route_to_ecb(p_cb, pp, p, ps, p_cur_offset, p_max_len);
     } break;
-    case NCI_ROUTE_ORDER_SYS_CODE: {
+  case NCI_ROUTE_ORDER_SYS_CODE: {
       nfa_ee_add_sys_code_route_to_ecb(p_cb, pp, p, ps, p_cur_offset,
                                        p_max_len);
     } break;

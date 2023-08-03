@@ -32,7 +32,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  Copyright 2018-2022 NXP
+ *  Copyright 2018-2023 NXP
  *
  ******************************************************************************/
 
@@ -53,6 +53,7 @@
 
 #if (NXP_EXTNS == TRUE)
 #include "nfa_sys_int.h"
+#include "nfc_config.h"
 #endif
 
 using android::base::StringPrintf;
@@ -1375,5 +1376,42 @@ tNFA_MW_VERSION NFA_GetMwVersion() {
       << StringPrintf("mwVer:Major=0x%x,Minor=0x%x", mwVer.major_version,
                  mwVer.minor_version);
   return mwVer;
+}
+/*******************************************************************************
+**
+** Function         NFA_GetChipVersion
+**
+** Description      This function provide right Chip version.
+
+**
+** Returns          MW version
+**
+*******************************************************************************/
+tNFC_chipType NFA_GetChipVersion() {
+  tEnableChip enableChip;
+  DLOG_IF(INFO, nfc_debug_enabled) << __func__;
+  if (NfcConfig::hasKey(NAME_NXP_CHIP_TYPE)) {
+    enableChip = NfcConfig::getUnsigned(NAME_NXP_CHIP_TYPE);
+    DLOG_IF(INFO, nfc_debug_enabled)
+      << StringPrintf("%s: 0x%x ", __func__, enableChip);
+      switch(enableChip) {
+        case 0x01:
+            nfcFL.chipType = pn7160;
+            break;
+        case 0x04:
+            nfcFL.chipType = pn7220;
+            break;
+        default:
+            nfcFL.chipType = pn7220;
+      }
+    }
+    else {
+      DLOG_IF(INFO, nfc_debug_enabled)
+        << StringPrintf("%s: Unable to find Config", __func__);
+        nfcFL.chipType = pn7220;
+    }
+    DLOG_IF(INFO, nfc_debug_enabled)
+      << StringPrintf("%s: 0x%x ", __func__, nfcFL.chipType);
+  return nfcFL.chipType;
 }
 #endif

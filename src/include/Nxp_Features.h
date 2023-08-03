@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2018,2020,2022 NXP
+ *  Copyright 2018,2020,2022-2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@
 /*Including T4T NFCEE by incrementing 1*/
 #define NFA_EE_MAX_EE_SUPPORTED 5
  using namespace std;
-typedef enum {
+/*typedef enum {
   unknown,
   pn547C2,
   pn65T,
@@ -41,6 +41,12 @@ typedef enum {
   pn80T,
   pn557,
   pn81T
+} tNFC_chipType;*/
+ typedef enum {
+  DEFAULT_CHIP_TYPE = 0x00,
+  pn7160,
+  pn7220,
+  pn7221
 } tNFC_chipType;
 
 typedef struct {
