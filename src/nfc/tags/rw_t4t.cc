@@ -19,7 +19,7 @@
 /******************************************************************************
 
  *
- *  Copyright 2022 NXP
+ *  Copyright 2022-2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -2657,6 +2657,10 @@ tNFC_STATUS RW_T4tNfceeReadPendingData() {
 *******************************************************************************/
 tNFC_STATUS RW_T4tNfceeUpdateNlen(uint16_t len) {
   DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("%s Enter ", __func__);
+  /* update nlen_size with T4T_FILE_LENGTH_SIZE to avoid mismatch in
+   * reading/writing length of data*/
+  tRW_T4T_CB *p_t4t = &rw_cb.tcb.t4t;
+  p_t4t->cc_file.ndef_fc.nlen_size = T4T_FILE_LENGTH_SIZE;
   if (!rw_t4t_update_nlen(len)) {
     return NFC_STATUS_FAILED;
   }
