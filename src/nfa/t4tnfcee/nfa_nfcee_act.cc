@@ -565,6 +565,11 @@ bool is_write_precondition_valid(tNFA_T4TNFCEE_MSG* p_data) {
  **
  *******************************************************************************/
 bool isReadPermitted(void) {
+  if (ccFileInfo.find(nfa_t4tnfcee_cb.cur_fileId) == ccFileInfo.end()) {
+    DLOG_IF(INFO, nfc_debug_enabled)
+        << StringPrintf("%s FileId Not found", __func__);
+    return false;
+  }
   return (ccFileInfo.find(nfa_t4tnfcee_cb.cur_fileId)->second.read_access ==
           T4T_NFCEE_READ_ALLOWED);
 }
