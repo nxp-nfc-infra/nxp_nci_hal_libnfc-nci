@@ -579,6 +579,11 @@ bool isReadPermitted(void) {
  **
  *******************************************************************************/
 bool isWritePermitted(void) {
+  if (ccFileInfo.find(nfa_t4tnfcee_cb.cur_fileId) == ccFileInfo.end()) {
+    DLOG_IF(INFO, nfc_debug_enabled)
+        << StringPrintf("%s FileId Not found", __func__);
+    return false;
+  }
   DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf(
       "%s : 0x%2x", __func__,
       ccFileInfo.find(nfa_t4tnfcee_cb.cur_fileId)->second.write_access);
