@@ -332,9 +332,9 @@ static uint16_t nfa_ee_total_lmrt_size(void) {
   return lmrt_size;
 }
 
-static void nfa_ee_add_tech_route_to_ecb(tNFA_EE_ECB* p_cb, uint8_t* pp,
-                                         uint8_t* p, uint8_t* ps,
-                                         int* p_cur_offset) {
+static void nfa_ee_add_tech_route_to_ecb(tNFA_EE_ECB *p_cb, uint8_t *pp,
+                                         uint8_t *p, uint8_t *ps,
+                                         int *p_cur_offset) {
   uint8_t num_tlv = *ps;
 
   /* add the Technology based routing */
@@ -2663,10 +2663,20 @@ void nfa_ee_route_add_one_ecb_by_route_order(tNFA_EE_ECB* p_cb, int rout_type,
     case NCI_ROUTE_ORDER_AID: {
       nfa_ee_add_aid_route_to_ecb(p_cb, pp, p, ps, p_cur_offset, p_max_len);
     } break;
-  case NCI_ROUTE_ORDER_SYS_CODE: {
+#if (NXP_EXTNS == TRUE)
+      if (nfcFL.chipType == pn7160) {
+      case NCI_ROUTE_ORDER_SYS_CODE: {
+        nfa_ee_add_sys_code_route_to_ecb(p_cb, pp, p, ps, p_cur_offset,
+                                         p_max_len);
+      } break;
+      }
+#else
+    case NCI_ROUTE_ORDER_SYS_CODE: {
       nfa_ee_add_sys_code_route_to_ecb(p_cb, pp, p, ps, p_cur_offset,
                                        p_max_len);
     } break;
+#endif
+
     default: {
       DLOG_IF(INFO, nfc_debug_enabled)
           << StringPrintf("%s -  Route type - NA:- %d", __func__, rout_type);
