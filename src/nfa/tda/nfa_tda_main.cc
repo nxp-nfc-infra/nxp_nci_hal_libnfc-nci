@@ -152,6 +152,7 @@ void initialize_ct_lib() {
   p_nfc_ct_one_bin_handle = dlopen("/system/lib64/nfc_tda.so", RTLD_NOW);
   if (p_nfc_ct_one_bin_handle == NULL) {
     LOG(ERROR) << StringPrintf("Error : opening (/system/lib64/nfc_tda.so) !!");
+    return;
   }
 
   if ((fp_ct_init_ext = (fp_ct_init_ext_t)dlsym(p_nfc_ct_one_bin_handle,
