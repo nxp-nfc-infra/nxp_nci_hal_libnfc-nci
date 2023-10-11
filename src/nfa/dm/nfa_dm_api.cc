@@ -94,7 +94,12 @@ void NFA_Init(tHAL_NFC_ENTRY* p_hal_entry_tbl) {
   nfa_rw_init();
   nfa_ce_init();
   nfa_ee_init();
-  nfa_tda_init();
+#if (NXP_EXTNS == TRUE)
+  nfcFL.chipType = NFA_GetChipVersion();
+  if (nfcFL.chipType != pn7160) {
+    nfa_tda_init();
+  }
+#endif
   if (nfa_ee_max_ee_cfg != 0) {
     nfa_dm_cb.get_max_ee = p_hal_entry_tbl->get_max_ee;
 #if (NXP_EXTNS == TRUE)
