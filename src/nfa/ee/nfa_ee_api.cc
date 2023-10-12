@@ -718,8 +718,13 @@ tNFA_STATUS NFA_EeAddSystemCodeRouting(uint16_t systemcode,
   } else if ((NFA_GetNCIVersion() != NCI_VERSION_2_0) &&
              (nfc_cb.isScbrSupported == false)) {
     LOG(ERROR) << StringPrintf("Invalid NCI Version/SCBR not supported");
-    status = NFA_STATUS_NOT_SUPPORTED;
-  } else {
+    status = NFA_STATUS_NOT_SUPPORTED; }
+#if (NXP_EXTNS == TRUE)
+    else if (NFA_GetChipVersion() != pn7160) {
+        LOG(ERROR) << StringPrintf("SCBR not supported");
+  }
+#endif
+  else {
     tNFA_EE_API_ADD_SYSCODE* p_msg =
         (tNFA_EE_API_ADD_SYSCODE*)GKI_getbuf(sizeof(tNFA_EE_API_ADD_SYSCODE));
     if (p_msg != nullptr) {
