@@ -235,8 +235,8 @@ bool nfa_dm_is_active(void) {
 ** Returns          tNFA_STATUS
 **
 *******************************************************************************/
-tNFA_STATUS nfa_dm_check_set_config(uint8_t tlv_list_len, uint8_t* p_tlv_list,
-                                    bool app_init) {
+tNFA_STATUS nfa_dm_check_set_config(uint8_t tag_len, uint8_t tlv_list_len,
+                                    uint8_t *p_tlv_list, bool app_init) {
   uint8_t type, len, *p_value, *p_stored, max_len;
   uint8_t xx = 0, updated_len = 0, *p_cur_len;
   bool update;
@@ -257,8 +257,8 @@ tNFA_STATUS nfa_dm_check_set_config(uint8_t tlv_list_len, uint8_t* p_tlv_list,
   {
     update = false;
     type = *(p_tlv_list + xx);
-    len = *(p_tlv_list + xx + 1);
-    p_value = p_tlv_list + xx + 2;
+    len = *(p_tlv_list + xx + tag_len);
+    p_value = p_tlv_list + xx + tag_len + 1;
     p_cur_len = nullptr;
     if (len > (tlv_list_len - xx - 2)) {
       LOG(ERROR) << StringPrintf("error: invalid TLV length: t:0x%x, l:%d",
@@ -428,20 +428,21 @@ tNFA_STATUS nfa_dm_check_set_config(uint8_t tlv_list_len, uint8_t* p_tlv_list,
       /* If need to change TLV in the original list. (Do not modify list if
        * app_init) */
       if ((updated_len != xx) && (!app_init)) {
-        memcpy(p_tlv_list + updated_len, p_tlv_list + xx, (len + 2));
+        memcpy(p_tlv_list + updated_len, p_tlv_list + xx, (len + tag_len + 1));
       }
-      updated_len += (len + 2);
+      updated_len += (len + tag_len + 1);
     }
-    xx += len + 2; /* move to next TLV */
+    xx += len + tag_len + 1; /* move to next TLV */
   }
 
   /* If any TVLs to update, or if the SetConfig was initiated by the
    * application, then send the SET_CONFIG command */
-  if (((updated_len || app_init) &&
-       (appl_dta_mode_flag == 0x00 ||
-       (nfa_dm_cb.eDtaMode & NFA_DTA_HCEF_MODE))) ||
-      (appl_dta_mode_flag && app_init)) {
-    nfc_status = NFC_SetConfig(updated_len, p_tlv_list);
+  if ((((updated_len || app_init) &&
+        (appl_dta_mode_flag == 0x00 ||
+         (nfa_dm_cb.eDtaMode & NFA_DTA_HCEF_MODE))) ||
+       (appl_dta_mode_flag && app_init)) ||
+      app_init) {
+    nfc_status = NFC_SetConfig(tag_len, updated_len, p_tlv_list);
 
     if (nfc_status == NFC_STATUS_OK) {
       if (nfa_dm_cb.eDtaMode & NFA_DTA_HCEF_MODE) {

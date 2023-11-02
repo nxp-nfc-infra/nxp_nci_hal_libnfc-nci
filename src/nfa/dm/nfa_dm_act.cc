@@ -157,7 +157,7 @@ void nfa_dm_sys_enable(void) { nfa_dm_set_init_nci_params(); }
 *******************************************************************************/
 static void nfa_dm_set_init_nci_params(void) {
   uint8_t xx;
-
+  uint8_t tag_len = 1;
   /* set NCI default value if other than zero */
 
   if (NFC_GetNCIVersion() == NCI_VERSION_2_0) {
@@ -208,12 +208,14 @@ static void nfa_dm_set_init_nci_params(void) {
 
   /* Set CE default configuration */
   if (p_nfa_dm_ce_cfg[0] && NFC_GetNCIVersion() != NCI_VERSION_2_0) {
-    nfa_dm_check_set_config(p_nfa_dm_ce_cfg[0], &p_nfa_dm_ce_cfg[1], false);
+    nfa_dm_check_set_config(tag_len, p_nfa_dm_ce_cfg[0], &p_nfa_dm_ce_cfg[1],
+                            false);
   }
 
   /* Set optional general default configuration */
   if (p_nfa_dm_gen_cfg && p_nfa_dm_gen_cfg[0]) {
-    nfa_dm_check_set_config(p_nfa_dm_gen_cfg[0], &p_nfa_dm_gen_cfg[1], false);
+    nfa_dm_check_set_config(tag_len, p_nfa_dm_gen_cfg[0], &p_nfa_dm_gen_cfg[1],
+                            false);
   }
 
   if (p_nfa_dm_interface_mapping && nfa_dm_num_dm_interface_mapping) {
@@ -592,10 +594,11 @@ bool nfa_dm_set_config(tNFA_DM_MSG* p_data) {
     /* Total length of TLV must be less than 256 (1 byte) */
     status = NFC_STATUS_FAILED;
   } else {
-    UINT8_TO_STREAM(p, p_data->setconfig.param_id);
+    ARRAY_TO_STREAM(p, p_data->setconfig.param_id, p_data->setconfig.num_ids);
     UINT8_TO_STREAM(p, p_data->setconfig.length);
     ARRAY_TO_STREAM(p, p_data->setconfig.p_data, p_data->setconfig.length)
-    status = nfa_dm_check_set_config((uint8_t)(p_data->setconfig.length + 2),
+    status = nfa_dm_check_set_config(p_data->setconfig.num_ids,
+                                     (uint8_t)(p_data->setconfig.length + 2),
                                      buff, true);
   }
 

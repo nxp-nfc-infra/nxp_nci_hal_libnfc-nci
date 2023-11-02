@@ -138,7 +138,8 @@ uint8_t nci_snd_core_get_config(uint8_t* param_ids, uint8_t num_ids) {
 ** Returns          status
 **
 *******************************************************************************/
-uint8_t nci_snd_core_set_config(uint8_t* p_param_tlvs, uint8_t tlv_size) {
+uint8_t nci_snd_core_set_config(uint8_t tag_len, uint8_t *p_param_tlvs,
+                                uint8_t tlv_size) {
   NFC_HDR* p;
   uint8_t* pp;
   uint8_t num = 0, ulen, len, *pt;
@@ -158,7 +159,7 @@ uint8_t nci_snd_core_set_config(uint8_t* p_param_tlvs, uint8_t tlv_size) {
   pt = p_param_tlvs;
   while (len > 1) {
     len -= 2;
-    pt++;
+    pt = pt + tag_len;
     num++;
     ulen = *pt++;
     pt += ulen;

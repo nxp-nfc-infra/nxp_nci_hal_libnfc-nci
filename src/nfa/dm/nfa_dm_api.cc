@@ -276,19 +276,21 @@ tNFA_STATUS NFA_SetPowerSubStateForScreenState(uint8_t screenState) {
 **                  NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-tNFA_STATUS NFA_SetConfig(tNFA_PMID param_id, uint8_t length, uint8_t* p_data) {
+tNFA_STATUS NFA_SetConfig(uint8_t num_ids, tNFA_PMID *param_id, uint8_t length,
+                          uint8_t *p_data) {
   tNFA_DM_API_SET_CONFIG* p_msg;
 
-  DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("param_id:0x%X", param_id);
+  DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("param_id:0x%X", *param_id);
 
-  p_msg = (tNFA_DM_API_SET_CONFIG*)GKI_getbuf(
-      (uint16_t)(sizeof(tNFA_DM_API_SET_CONFIG) + length));
+  p_msg = (tNFA_DM_API_SET_CONFIG *)GKI_getbuf(
+      (uint16_t)(sizeof(tNFA_DM_API_SET_CONFIG) + num_ids + length));
   if (p_msg != nullptr) {
     p_msg->hdr.event = NFA_DM_API_SET_CONFIG_EVT;
-
-    p_msg->param_id = param_id;
+    p_msg->num_ids = num_ids;
+    p_msg->param_id = (uint8_t *)(p_msg + 1);
+    memcpy(p_msg->param_id, param_id, num_ids);
     p_msg->length = length;
-    p_msg->p_data = (uint8_t*)(p_msg + 1);
+    p_msg->p_data = (uint8_t *)(p_msg + num_ids + 1);
 
     /* Copy parameter data */
     memcpy(p_msg->p_data, p_data, length);

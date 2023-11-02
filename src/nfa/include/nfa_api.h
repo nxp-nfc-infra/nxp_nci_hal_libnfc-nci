@@ -861,8 +861,8 @@ extern tNFA_STATUS NFA_Disable(bool graceful);
 **                  NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-extern tNFA_STATUS NFA_SetConfig(tNFA_PMID param_id, uint8_t length,
-                                 uint8_t* p_data);
+extern tNFA_STATUS NFA_SetConfig(uint8_t num_ids, tNFA_PMID *param_id,
+                                 uint8_t length, uint8_t *p_data);
 
 /*******************************************************************************
 **

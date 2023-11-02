@@ -522,7 +522,8 @@ static void nfa_p2p_sys_disable(void) {
 *******************************************************************************/
 void nfa_p2p_set_config(tNFA_DM_DISC_TECH_PROTO_MASK disc_mask) {
   uint8_t wt, gen_bytes_len = LLCP_MAX_GEN_BYTES;
-  uint8_t params[LLCP_MAX_GEN_BYTES + 5], *p, length;
+  uint8_t params[LLCP_MAX_GEN_BYTES + 5], *p, param_len;
+  uint8_t tag_len = 1;
 
   DLOG_IF(INFO, nfc_debug_enabled) << __func__;
 
@@ -544,9 +545,9 @@ void nfa_p2p_set_config(tNFA_DM_DISC_TECH_PROTO_MASK disc_mask) {
     UINT8_TO_BE_STREAM(p, gen_bytes_len);
 
     p += gen_bytes_len;
-    length = gen_bytes_len + 2;
+    param_len = gen_bytes_len + 2;
 
-    nfa_dm_check_set_config(length, params, false);
+    nfa_dm_check_set_config(tag_len, param_len, params, false);
   }
 
   if ((disc_mask &
@@ -562,15 +563,15 @@ void nfa_p2p_set_config(tNFA_DM_DISC_TECH_PROTO_MASK disc_mask) {
     UINT8_TO_BE_STREAM(p, gen_bytes_len);
 
     p += gen_bytes_len;
-    length = gen_bytes_len + 2;
+    param_len = gen_bytes_len + 2;
 
     UINT8_TO_BE_STREAM(p, NFC_PMID_WT);
     UINT8_TO_BE_STREAM(p, NCI_PARAM_LEN_WT);
     UINT8_TO_BE_STREAM(p, wt);
 
-    length += 3;
+    param_len += 3;
 
-    nfa_dm_check_set_config(length, params, false);
+    nfa_dm_check_set_config(tag_len, param_len, params, false);
   }
 }
 

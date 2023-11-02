@@ -102,7 +102,8 @@ typedef struct {
 /* data type for NFA_DM_API_SET_CONFIG_EVT */
 typedef struct {
   NFC_HDR hdr;
-  tNFA_PMID param_id;
+  uint8_t num_ids;
+  tNFA_PMID *param_id;
   uint8_t length;
   uint8_t* p_data;
 } tNFA_DM_API_SET_CONFIG;
@@ -666,8 +667,8 @@ void nfa_dm_proc_nfcc_power_mode(uint8_t nfcc_power_mode);
 bool nfa_dm_evt_hdlr(NFC_HDR* p_msg);
 void nfa_dm_sys_enable(void);
 void nfa_dm_sys_disable(void);
-tNFA_STATUS nfa_dm_check_set_config(uint8_t tlv_list_len, uint8_t* p_tlv_list,
-                                    bool app_init);
+tNFA_STATUS nfa_dm_check_set_config(uint8_t tag_len, uint8_t tlv_list_len,
+                                    uint8_t *p_tlv_list, bool app_init);
 
 void nfa_dm_conn_cback_event_notify(uint8_t event, tNFA_CONN_EVT_DATA* p_data);
 

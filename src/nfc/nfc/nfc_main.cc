@@ -857,14 +857,16 @@ uint16_t NFC_GetLmrtSize(void) {
 **                  TLV to NFCC. The response from NFCC is reported by
 **                  tNFC_RESPONSE_CBACK as NFC_SET_CONFIG_REVT.
 **
-** Parameters       tlv_size - the length of p_param_tlvs.
+** Parameters       tag_len - the length of the TAG.
+                    tlv_size - the length of p_param_tlvs.
 **                  p_param_tlvs - the parameter ID/Len/Value list
 **
 ** Returns          tNFC_STATUS
 **
 *******************************************************************************/
-tNFC_STATUS NFC_SetConfig(uint8_t tlv_size, uint8_t* p_param_tlvs) {
-  return nci_snd_core_set_config(p_param_tlvs, tlv_size);
+tNFC_STATUS NFC_SetConfig(uint8_t tag_len, uint8_t tlv_size,
+                          uint8_t *p_param_tlvs) {
+  return nci_snd_core_set_config(tag_len, p_param_tlvs, tlv_size);
 }
 
 /*******************************************************************************
