@@ -350,7 +350,7 @@ void nfc_ce_t3t_set_listen_params(void) {
   uint8_t adv_Feat = 1;
   uint8_t t3tPMM[NCI_T3T_PMM_LEN] = {0xFF, 0xFF, 0xFF, 0xFF,
                                      0xFF, 0xFF, 0xFF, 0xFF};
-  uint8_t tag_len = 1;
+
   /* Point to start of tlv buffer */
   p_params = tlv;
 
@@ -408,7 +408,7 @@ void nfc_ce_t3t_set_listen_params(void) {
   if (appl_dta_mode_flag == 0x01) {
     nfa_dm_cb.eDtaMode |= NFA_DTA_HCEF_MODE;
   }
-  nfa_dm_check_set_config(tag_len, tlv_size, (uint8_t *)tlv, false);
+  nfa_dm_check_set_config(tlv_size, (uint8_t *)tlv, false);
 }
 
 /*******************************************************************************

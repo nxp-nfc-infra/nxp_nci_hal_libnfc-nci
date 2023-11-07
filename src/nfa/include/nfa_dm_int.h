@@ -83,6 +83,8 @@ enum {
   NFA_DM_TIMEOUT_DISABLE_EVT,
   NFA_DM_API_SET_POWER_SUB_STATE_EVT,
   NFA_DM_API_SEND_RAW_VS_EVT,
+  NFA_DM_API_SET_CONFIG_EXTN_EVT,
+  NFA_DM_API_GET_CONFIG_EXTN_EVT,
   NFA_DM_MAX_EVT
 };
 
@@ -102,11 +104,19 @@ typedef struct {
 /* data type for NFA_DM_API_SET_CONFIG_EVT */
 typedef struct {
   NFC_HDR hdr;
-  uint8_t num_ids;
-  tNFA_PMID *param_id;
+  tNFA_PMID param_id;
   uint8_t length;
   uint8_t* p_data;
 } tNFA_DM_API_SET_CONFIG;
+
+/* data type for NFA_DM_API_SET_CONFIG_EXTN_EVT */
+typedef struct {
+  NFC_HDR hdr;
+  uint8_t tag_len;
+  tNFA_PMID *param_id;
+  uint8_t length;
+  uint8_t *p_data;
+} tNFA_DM_API_SET_CONFIG_EXTN;
 
 /* data type for NFA_DM_API_GET_CONFIG_EVT */
 typedef struct {
@@ -114,6 +124,14 @@ typedef struct {
   uint8_t num_ids;
   tNFA_PMID* p_pmids;
 } tNFA_DM_API_GET_CONFIG;
+
+/* data type for NFA_DM_API_GET_CONFIG_EXTN_EVT */
+typedef struct {
+  NFC_HDR hdr;
+  uint8_t tag_len;
+  uint8_t num_ids;
+  tNFA_PMID *p_pmids;
+} tNFA_DM_API_GET_CONFIG_EXTN;
 
 /* data type for NFA_DM_API_REQ_EXCL_RF_CTRL_EVT */
 typedef struct {
@@ -241,6 +259,8 @@ typedef union {
   tNFA_DM_API_REG_VSC reg_vsc;       /* NFA_DM_API_REG_VSC_EVT               */
   /* NFA_DM_API_SET_POWER_SUB_STATE_EVT */
   tNFA_DM_API_SET_POWER_SUB_STATE set_power_state;
+  tNFA_DM_API_SET_CONFIG_EXTN setconfig_extn;
+  tNFA_DM_API_GET_CONFIG_EXTN getconfig_extn;
 } tNFA_DM_MSG;
 
 /* DM RF discovery state */
@@ -633,7 +653,9 @@ void nfa_hci_init(void);
 bool nfa_dm_enable(tNFA_DM_MSG* p_data);
 bool nfa_dm_disable(tNFA_DM_MSG* p_data);
 bool nfa_dm_set_config(tNFA_DM_MSG* p_data);
+bool nfa_dm_set_config_extn(tNFA_DM_MSG *p_data);
 bool nfa_dm_get_config(tNFA_DM_MSG* p_data);
+bool nfa_dm_get_config_extn(tNFA_DM_MSG *p_data);
 bool nfa_dm_act_request_excl_rf_ctrl(tNFA_DM_MSG* p_data);
 bool nfa_dm_act_release_excl_rf_ctrl(tNFA_DM_MSG* p_data);
 bool nfa_dm_act_enable_polling(tNFA_DM_MSG* p_data);
@@ -667,9 +689,10 @@ void nfa_dm_proc_nfcc_power_mode(uint8_t nfcc_power_mode);
 bool nfa_dm_evt_hdlr(NFC_HDR* p_msg);
 void nfa_dm_sys_enable(void);
 void nfa_dm_sys_disable(void);
-tNFA_STATUS nfa_dm_check_set_config(uint8_t tag_len, uint8_t tlv_list_len,
-                                    uint8_t *p_tlv_list, bool app_init);
-
+tNFA_STATUS nfa_dm_check_set_config(uint8_t tlv_list_len, uint8_t *p_tlv_list,
+                                    bool app_init);
+tNFA_STATUS nfa_dm_check_set_config_extn(uint8_t tag_len, uint8_t tlv_list_len,
+                                         uint8_t *p_tlv_list);
 void nfa_dm_conn_cback_event_notify(uint8_t event, tNFA_CONN_EVT_DATA* p_data);
 
 /* Discovery function prototypes */

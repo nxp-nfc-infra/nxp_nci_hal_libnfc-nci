@@ -17,9 +17,10 @@
  ******************************************************************************/
 
 /******************************************************************************
-
  *
- *  Copyright 2022-2023 NXP
+ *  The original Work has been changed by NXP
+ *
+ *  Copyright 2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -861,8 +862,30 @@ extern tNFA_STATUS NFA_Disable(bool graceful);
 **                  NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-extern tNFA_STATUS NFA_SetConfig(uint8_t num_ids, tNFA_PMID *param_id,
-                                 uint8_t length, uint8_t *p_data);
+extern tNFA_STATUS NFA_SetConfig(tNFA_PMID param_id, uint8_t length,
+                                 uint8_t *p_data);
+
+/*******************************************************************************
+**
+** Function         NFA_SetConfigExtn
+**
+** Description      Set the extention tag (more than 1Byte TAG length)
+**                  configuration parameters to NFCC. The result is
+**                  reported with an NFA_DM_SET_CONFIG_EVT in the tNFA_DM_CBACK
+**                  callback.
+**
+** Note:            If RF discovery is started,
+**                  NFA_StopRfDiscovery()/NFA_RF_DISCOVERY_STOPPED_EVT should
+**                  happen before calling this function. Most Configuration
+**                  parameters are related to RF discovery.
+**
+** Returns          NFA_STATUS_OK if successfully initiated
+**                  NFA_STATUS_BUSY if previous setting is on-going
+**                  NFA_STATUS_FAILED otherwise
+**
+*******************************************************************************/
+extern tNFA_STATUS NFA_SetConfigExtn(uint8_t tag_len, tNFA_PMID *param_id,
+                                     uint8_t length, uint8_t *p_data);
 
 /*******************************************************************************
 **
@@ -877,6 +900,22 @@ extern tNFA_STATUS NFA_SetConfig(uint8_t num_ids, tNFA_PMID *param_id,
 **
 *******************************************************************************/
 extern tNFA_STATUS NFA_GetConfig(uint8_t num_ids, tNFA_PMID* p_param_ids);
+
+/*******************************************************************************
+**
+** Function         NFA_GetConfigExtn
+**
+** Description      Get the extention tag (more than 1Byte TAG length)
+**                  configuration parameters from NFCC. The result is
+**                  reported with an NFA_DM_GET_CONFIG_EVT in the tNFA_DM_CBACK
+**                  callback.
+**
+** Returns          NFA_STATUS_OK if successfully initiated
+**                  NFA_STATUS_FAILED otherwise
+**
+*******************************************************************************/
+extern tNFA_STATUS NFA_GetConfigExtn(uint8_t tag_len, uint8_t num_ids,
+                                     tNFA_PMID *p_param_ids);
 
 /*******************************************************************************
 **

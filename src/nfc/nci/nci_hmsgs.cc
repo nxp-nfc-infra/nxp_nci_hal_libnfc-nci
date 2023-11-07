@@ -18,6 +18,26 @@
 
 /******************************************************************************
  *
+ *  The original Work has been changed by NXP
+ *
+ *  Copyright 2023 NXP
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ ******************************************************************************/
+
+/******************************************************************************
+ *
  *  This file contains function of the NCI unit to format and send NCI
  *  commands (for DH).
  *
@@ -131,6 +151,41 @@ uint8_t nci_snd_core_get_config(uint8_t* param_ids, uint8_t num_ids) {
 
 /*******************************************************************************
 **
+** Function         nci_snd_core_get_config_extn
+**
+** Description      compose and send CORE GET_CONFIG propritary extention
+**                  (TAG length more than one byte)command to command queue
+**
+** Returns          status
+**
+*******************************************************************************/
+uint8_t nci_snd_core_get_config_extn(uint8_t tag_len, uint8_t *param_ids,
+                                     uint8_t num_ids) {
+  NFC_HDR *p;
+  uint8_t *pp;
+
+  p = NCI_GET_CMD_BUF(num_ids);
+  if (p == nullptr)
+    return (NCI_STATUS_FAILED);
+
+  p->event = BT_EVT_TO_NFC_NCI;
+  p->len = NCI_MSG_HDR_SIZE + num_ids + tag_len;
+  p->offset = NCI_MSG_OFFSET_SIZE;
+  p->layer_specific = 0;
+  pp = (uint8_t *)(p + 1) + p->offset;
+
+  NCI_MSG_BLD_HDR0(pp, NCI_MT_CMD, NCI_GID_CORE);
+  NCI_MSG_BLD_HDR1(pp, NCI_MSG_CORE_GET_CONFIG);
+  UINT8_TO_STREAM(pp, (uint8_t)(tag_len + 1));
+  UINT8_TO_STREAM(pp, num_ids);
+  ARRAY_TO_STREAM(pp, param_ids, tag_len);
+
+  nfc_ncif_send_cmd(p);
+  return (NCI_STATUS_OK);
+}
+
+/*******************************************************************************
+**
 ** Function         nci_snd_core_set_config
 **
 ** Description      compose and send CORE SET_CONFIG command to command queue
@@ -138,8 +193,58 @@ uint8_t nci_snd_core_get_config(uint8_t* param_ids, uint8_t num_ids) {
 ** Returns          status
 **
 *******************************************************************************/
-uint8_t nci_snd_core_set_config(uint8_t tag_len, uint8_t *p_param_tlvs,
-                                uint8_t tlv_size) {
+uint8_t nci_snd_core_set_config(uint8_t *p_param_tlvs, uint8_t tlv_size) {
+  NFC_HDR *p;
+  uint8_t *pp;
+  uint8_t num = 0, ulen, len, *pt;
+
+  p = NCI_GET_CMD_BUF(tlv_size + 1);
+  if (p == nullptr)
+    return (NCI_STATUS_FAILED);
+
+  p->event = BT_EVT_TO_NFC_NCI;
+  p->len = NCI_MSG_HDR_SIZE + tlv_size + 1;
+  p->offset = NCI_MSG_OFFSET_SIZE;
+  pp = (uint8_t *)(p + 1) + p->offset;
+
+  NCI_MSG_BLD_HDR0(pp, NCI_MT_CMD, NCI_GID_CORE);
+  NCI_MSG_BLD_HDR1(pp, NCI_MSG_CORE_SET_CONFIG);
+  UINT8_TO_STREAM(pp, (uint8_t)(tlv_size + 1));
+  len = tlv_size;
+  pt = p_param_tlvs;
+  while (len > 1) {
+    len -= 2;
+    pt++;
+    num++;
+    ulen = *pt++;
+    pt += ulen;
+    if (len >= ulen) {
+      len -= ulen;
+    } else {
+      GKI_freebuf(p);
+      return NCI_STATUS_FAILED;
+    }
+  }
+
+  UINT8_TO_STREAM(pp, num);
+  ARRAY_TO_STREAM(pp, p_param_tlvs, tlv_size);
+  nfc_ncif_send_cmd(p);
+
+  return (NCI_STATUS_OK);
+}
+
+/*******************************************************************************
+**
+** Function         nci_snd_core_set_config_extn
+**
+** Description      compose and send CORE SET_CONFIG propritary extention
+**                  (TAG length more than one byte)command to command queue
+**
+** Returns          status
+**
+*******************************************************************************/
+uint8_t nci_snd_core_set_config_extn(uint8_t tag_len, uint8_t *p_param_tlvs,
+                                     uint8_t tlv_size) {
   NFC_HDR* p;
   uint8_t* pp;
   uint8_t num = 0, ulen, len, *pt;

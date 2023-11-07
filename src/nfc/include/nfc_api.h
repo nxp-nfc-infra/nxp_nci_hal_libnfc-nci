@@ -942,6 +942,23 @@ extern uint16_t NFC_GetLmrtSize(void);
 **                  TLV to NFCC. The response from NFCC is reported by
 **                  tNFC_RESPONSE_CBACK as NFC_SET_CONFIG_REVT.
 **
+** Parameters       tlv_size - the length of p_param_tlvs.
+**                  p_param_tlvs - the parameter ID/Len/Value list
+**
+** Returns          tNFC_STATUS
+**
+*******************************************************************************/
+extern tNFC_STATUS NFC_SetConfig(uint8_t tlv_size, uint8_t *p_param_tlvs);
+
+/*******************************************************************************
+**
+** Function         NFC_SetConfigExtn
+**
+** Description      This function is called to send the extention tag
+**                  configuration parameter TLV to NFCC. The response
+**                  from NFCC is reported by tNFC_RESPONSE_CBACK as
+**                  NFC_SET_CONFIG_REVT.
+**
 ** Parameters       tag_len - Length of the TAG
 **                  tlv_size - the length of p_param_tlvs.
 **                  p_param_tlvs - the parameter ID/Len/Value list
@@ -949,8 +966,8 @@ extern uint16_t NFC_GetLmrtSize(void);
 ** Returns          tNFC_STATUS
 **
 *******************************************************************************/
-extern tNFC_STATUS NFC_SetConfig(uint8_t tag_len, uint8_t tlv_size,
-                                 uint8_t *p_param_tlvs);
+extern tNFC_STATUS NFC_SetConfigExtn(uint8_t tag_len, uint8_t tlv_size,
+                                     uint8_t *p_param_tlvs);
 
 /*******************************************************************************
 **
@@ -967,6 +984,24 @@ extern tNFC_STATUS NFC_SetConfig(uint8_t tag_len, uint8_t tlv_size,
 **
 *******************************************************************************/
 extern tNFC_STATUS NFC_GetConfig(uint8_t num_ids, uint8_t* p_param_ids);
+
+/*******************************************************************************
+**
+** Function         NFC_GetConfigExtn
+**
+** Description      This function is called to retrieve the parameter TLV from
+**                  NFCC. The response from NFCC is reported by
+**                  tNFC_RESPONSE_CBACK as NFC_GET_CONFIG_REVT.
+**
+** Parameters       tag_len - Length of the TAG
+**                  num_ids - the number of parameter IDs
+**                  p_param_ids - the parameter ID list.
+**
+** Returns          tNFC_STATUS
+**
+*******************************************************************************/
+extern tNFC_STATUS NFC_GetConfigExtn(uint8_t tag_len, uint8_t num_ids,
+                                     uint8_t *p_param_ids);
 
 /*******************************************************************************
 **

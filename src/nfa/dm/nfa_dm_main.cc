@@ -19,7 +19,7 @@
 /******************************************************************************
 
  *
- *  Copyright 2022 NXP
+ *  Copyright 2022-2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -97,7 +97,9 @@ const tNFA_DM_ACTION nfa_dm_action[] = {
     nfa_dm_act_send_vsc,             /* NFA_DM_API_SEND_VSC_EVT              */
     nfa_dm_act_disable_timeout,      /* NFA_DM_TIMEOUT_DISABLE_EVT           */
     nfa_dm_set_power_sub_state,      /* NFA_DM_API_SET_POWER_SUB_STATE_EVT   */
-    nfa_dm_act_send_raw_vs           /* NFA_DM_API_SEND_RAW_VS_EVT           */
+    nfa_dm_act_send_raw_vs,          /* NFA_DM_API_SEND_RAW_VS_EVT           */
+    nfa_dm_set_config_extn,          /* NFA_DM_API_SET_CONFIG_EXTN_EVT       */
+    nfa_dm_get_config_extn           /* NFA_DM_API_GET_CONFIG_EXTN_EVT       */
 };
 
 /*****************************************************************************
@@ -235,8 +237,8 @@ bool nfa_dm_is_active(void) {
 ** Returns          tNFA_STATUS
 **
 *******************************************************************************/
-tNFA_STATUS nfa_dm_check_set_config(uint8_t tag_len, uint8_t tlv_list_len,
-                                    uint8_t *p_tlv_list, bool app_init) {
+tNFA_STATUS nfa_dm_check_set_config(uint8_t tlv_list_len, uint8_t *p_tlv_list,
+                                    bool app_init) {
   uint8_t type, len, *p_value, *p_stored, max_len;
   uint8_t xx = 0, updated_len = 0, *p_cur_len;
   bool update;
@@ -257,8 +259,8 @@ tNFA_STATUS nfa_dm_check_set_config(uint8_t tag_len, uint8_t tlv_list_len,
   {
     update = false;
     type = *(p_tlv_list + xx);
-    len = *(p_tlv_list + xx + tag_len);
-    p_value = p_tlv_list + xx + tag_len + 1;
+    len = *(p_tlv_list + xx + 1);
+    p_value = p_tlv_list + xx + 2;
     p_cur_len = nullptr;
     if (len > (tlv_list_len - xx - 2)) {
       LOG(ERROR) << StringPrintf("error: invalid TLV length: t:0x%x, l:%d",
@@ -428,21 +430,20 @@ tNFA_STATUS nfa_dm_check_set_config(uint8_t tag_len, uint8_t tlv_list_len,
       /* If need to change TLV in the original list. (Do not modify list if
        * app_init) */
       if ((updated_len != xx) && (!app_init)) {
-        memcpy(p_tlv_list + updated_len, p_tlv_list + xx, (len + tag_len + 1));
+        memcpy(p_tlv_list + updated_len, p_tlv_list + xx, (len + 2));
       }
-      updated_len += (len + tag_len + 1);
+      updated_len += (len + 2);
     }
-    xx += len + tag_len + 1; /* move to next TLV */
+    xx += len + 2; /* move to next TLV */
   }
 
   /* If any TVLs to update, or if the SetConfig was initiated by the
    * application, then send the SET_CONFIG command */
-  if ((((updated_len || app_init) &&
-        (appl_dta_mode_flag == 0x00 ||
-         (nfa_dm_cb.eDtaMode & NFA_DTA_HCEF_MODE))) ||
-       (appl_dta_mode_flag && app_init)) ||
-      app_init) {
-    nfc_status = NFC_SetConfig(tag_len, updated_len, p_tlv_list);
+  if (((updated_len || app_init) &&
+       (appl_dta_mode_flag == 0x00 ||
+        (nfa_dm_cb.eDtaMode & NFA_DTA_HCEF_MODE))) ||
+      (appl_dta_mode_flag && app_init)) {
+    nfc_status = NFC_SetConfig(updated_len, p_tlv_list);
 
     if (nfc_status == NFC_STATUS_OK) {
       if (nfa_dm_cb.eDtaMode & NFA_DTA_HCEF_MODE) {
@@ -485,6 +486,47 @@ tNFA_STATUS nfa_dm_check_set_config(uint8_t tag_len, uint8_t tlv_list_len,
   }
 }
 
+/*******************************************************************************
+**
+** Function         nfa_dm_check_set_config_extn
+**
+** Description      sends extenstion TAG configuration to controller
+**
+**
+** Returns          tNFA_STATUS
+**
+*******************************************************************************/
+tNFA_STATUS nfa_dm_check_set_config_extn(uint8_t tag_len, uint8_t tlv_list_len,
+                                         uint8_t *p_tlv_list) {
+  tNFC_STATUS nfc_status;
+  uint32_t cur_bit;
+
+  /* We only allow 32 pending SET_CONFIGs */
+  if (nfa_dm_cb.setcfg_pending_num >= NFA_DM_SETCONFIG_PENDING_MAX) {
+    LOG(ERROR) << StringPrintf("error: pending number of SET_CONFIG "
+                               "exceeded");
+    return NFA_STATUS_FAILED;
+  }
+
+  nfc_status = NFC_SetConfigExtn(tag_len, tlv_list_len + 1, p_tlv_list);
+
+  if (nfc_status == NFC_STATUS_OK) {
+    /* Keep track of whether we will need to notify NFA_DM_SET_CONFIG_EVT on
+     * NFC_SET_CONFIG_REVT */
+
+    /* Get the next available bit offset for this setconfig (based on how many
+     * SetConfigs are outstanding) */
+    cur_bit = (uint32_t)(1 << nfa_dm_cb.setcfg_pending_num);
+
+    /* If setconfig is due to NFA_SetConfig: then set the bit
+     * (NFA_DM_SET_CONFIG_EVT needed on NFC_SET_CONFIG_REVT) */
+    nfa_dm_cb.setcfg_pending_mask |= cur_bit;
+
+    /* Increment setcfg_pending counter */
+    nfa_dm_cb.setcfg_pending_num++;
+  }
+  return nfc_status;
+}
 /*******************************************************************************
 **
 ** Function         nfa_dm_nfc_revt_2_str
@@ -544,6 +586,10 @@ static std::string nfa_dm_evt_2_str(uint16_t event) {
       return "NFA_DM_TIMEOUT_DISABLE_EVT";
     case NFA_DM_API_SET_POWER_SUB_STATE_EVT:
       return "NFA_DM_API_SET_POWER_SUB_STATE_EVT";
+    case NFA_DM_API_SET_CONFIG_EXTN_EVT:
+      return "NFA_DM_API_SET_CONFIG_EXTN_EVT";
+    case NFA_DM_API_GET_CONFIG_EXTN_EVT:
+      return "NFA_DM_API_GET_CONFIG_EXTN_EVT";
   }
 
   return "Unknown or Vendor Specific";

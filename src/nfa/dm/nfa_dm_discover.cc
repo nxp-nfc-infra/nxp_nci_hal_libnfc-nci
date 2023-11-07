@@ -316,7 +316,6 @@ static tNFA_STATUS nfa_dm_set_rf_listen_mode_config(
   uint8_t params[40], *p;
   uint8_t platform = 0;
   uint8_t sens_info = 0;
-  uint8_t tag_len = 1;
 
   DLOG_IF(INFO, nfc_debug_enabled)
       << StringPrintf("tech_proto_mask = 0x%08X", tech_proto_mask);
@@ -390,7 +389,7 @@ static tNFA_STATUS nfa_dm_set_rf_listen_mode_config(
   }
 
   if (p > params) {
-    nfa_dm_check_set_config(tag_len, (uint8_t)(p - params), params, false);
+    nfa_dm_check_set_config((uint8_t)(p - params), params, false);
   }
 
   return NFA_STATUS_OK;
@@ -406,7 +405,7 @@ static tNFA_STATUS nfa_dm_set_rf_listen_mode_config(
 *******************************************************************************/
 static void nfa_dm_set_total_duration(void) {
   uint8_t params[10], *p;
-  uint8_t tag_len = 1;
+
   DLOG_IF(INFO, nfc_debug_enabled) << __func__;
 
   p = params;
@@ -417,7 +416,7 @@ static void nfa_dm_set_total_duration(void) {
   UINT16_TO_STREAM(p, nfa_dm_cb.disc_cb.disc_duration);
 
   if (p > params) {
-    nfa_dm_check_set_config(tag_len, (uint8_t)(p - params), params, false);
+    nfa_dm_check_set_config((uint8_t)(p - params), params, false);
   }
 }
 /*******************************************************************************
@@ -434,7 +433,6 @@ static void nfa_dm_set_rf_listen_mode_raw_config(
   tNFA_DM_DISC_TECH_PROTO_MASK disc_mask = 0;
   tNFA_LISTEN_CFG* p_cfg = &nfa_dm_cb.disc_cb.excl_listen_config;
   uint8_t params[250], *p, xx;
-  uint8_t tag_len = 1;
 
   DLOG_IF(INFO, nfc_debug_enabled) << __func__;
 
@@ -480,7 +478,7 @@ static void nfa_dm_set_rf_listen_mode_raw_config(
     UINT8_TO_STREAM(p, p_cfg->la_nfcid1_len);
     ARRAY_TO_STREAM(p, p_cfg->la_nfcid1, p_cfg->la_nfcid1_len);
 
-    nfa_dm_check_set_config(tag_len, (uint8_t)(p - params), params, false);
+    nfa_dm_check_set_config((uint8_t)(p - params), params, false);
   }
 
   /*
@@ -511,7 +509,7 @@ static void nfa_dm_set_rf_listen_mode_raw_config(
     UINT8_TO_STREAM(p, NCI_PARAM_LEN_LB_ADC_FO);
     UINT8_TO_STREAM(p, p_cfg->lb_adc_fo);
 
-    nfa_dm_check_set_config(tag_len, (uint8_t)(p - params), params, false);
+    nfa_dm_check_set_config((uint8_t)(p - params), params, false);
 
     if (p_cfg->lb_sensb_info & NCI_LISTEN_PROTOCOL_ISO_DEP) {
       disc_mask |= NFA_DM_DISC_MASK_LB_ISO_DEP;
@@ -553,7 +551,7 @@ static void nfa_dm_set_rf_listen_mode_raw_config(
     UINT8_TO_STREAM(p, NCI_PARAM_LEN_LF_T3T_PMM);
     ARRAY_TO_STREAM(p, p_cfg->lf_t3t_pmm, NCI_PARAM_LEN_LF_T3T_PMM);
 
-    nfa_dm_check_set_config(tag_len, (uint8_t)(p - params), params, false);
+    nfa_dm_check_set_config((uint8_t)(p - params), params, false);
 
     if (p_cfg->lf_t3t_flags != NCI_LF_T3T_FLAGS2_ALL_DISABLED) {
       disc_mask |= NFA_DM_DISC_MASK_LF_T3T;
@@ -587,7 +585,7 @@ static void nfa_dm_set_rf_listen_mode_raw_config(
       ARRAY_TO_STREAM(p, p_cfg->lb_h_info_resp, p_cfg->lb_h_info_resp_len);
     }
 
-    nfa_dm_check_set_config(tag_len, (uint8_t)(p - params), params, false);
+    nfa_dm_check_set_config((uint8_t)(p - params), params, false);
   }
 
   /*
@@ -611,7 +609,7 @@ static void nfa_dm_set_rf_listen_mode_raw_config(
     UINT8_TO_STREAM(p, 1);
     UINT8_TO_STREAM(p, p_cfg->ln_atr_res_config);
 
-    nfa_dm_check_set_config(tag_len, (uint8_t)(p - params), params, false);
+    nfa_dm_check_set_config((uint8_t)(p - params), params, false);
   }
 
   *p_disc_mask = disc_mask;
@@ -923,7 +921,6 @@ void nfa_dm_start_rf_discover(void) {
   tNFA_DM_DISC_TECH_PROTO_MASK dm_disc_mask = 0, poll_mask, listen_mask;
   uint8_t config_params[10], *p;
   uint8_t num_params, xx;
-  uint8_t tag_len = 1;
 
   DLOG_IF(INFO, nfc_debug_enabled) << __func__;
   /* Make sure that RF discovery was enabled, or some app has exclusive control
@@ -1093,8 +1090,7 @@ void nfa_dm_start_rf_discover(void) {
         } else {
           UINT8_TO_STREAM(p, 0x01);  // RC=1
         }
-        nfa_dm_check_set_config(tag_len, p - config_params, config_params,
-                                false);
+        nfa_dm_check_set_config(p - config_params, config_params, false);
       }
     }
   }
