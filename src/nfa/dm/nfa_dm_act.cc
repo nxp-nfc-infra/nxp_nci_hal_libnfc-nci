@@ -623,8 +623,11 @@ bool nfa_dm_set_config_extn(tNFA_DM_MSG *p_data) {
   uint8_t *p = buff;
 
   tNFA_DM_CBACK_DATA dm_cback_data;
-
-  if (p_data->setconfig_extn.length + 2 > 255) {
+  /* TAG length (priopritary TAG has more than 1 byte) + Value Length (1byte) +
+   * Actual Value length*/
+  uint8_t tlv_len =
+      p_data->setconfig_extn.tag_len + 1 + p_data->setconfig_extn.length;
+  if (tlv_len > 255) {
     /* Total length of TLV must be less than 256 (1 byte) */
     status = NFC_STATUS_FAILED;
   } else {
@@ -633,9 +636,8 @@ bool nfa_dm_set_config_extn(tNFA_DM_MSG *p_data) {
     UINT8_TO_STREAM(p, p_data->setconfig_extn.length);
     ARRAY_TO_STREAM(p, p_data->setconfig_extn.p_data,
                     p_data->setconfig_extn.length)
-    status = nfa_dm_check_set_config_extn(
-        p_data->setconfig_extn.tag_len,
-        (uint8_t)(p_data->setconfig_extn.length + 2), buff);
+    status = nfa_dm_check_set_config_extn(p_data->setconfig_extn.tag_len,
+                                          tlv_len, buff);
   }
 
   if (status != NFC_STATUS_OK) {

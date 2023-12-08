@@ -508,7 +508,7 @@ tNFA_STATUS nfa_dm_check_set_config_extn(uint8_t tag_len, uint8_t tlv_list_len,
     return NFA_STATUS_FAILED;
   }
 
-  nfc_status = NFC_SetConfigExtn(tag_len, tlv_list_len + 1, p_tlv_list);
+  nfc_status = NFC_SetConfigExtn(tag_len, tlv_list_len, p_tlv_list);
 
   if (nfc_status == NFC_STATUS_OK) {
     /* Keep track of whether we will need to notify NFA_DM_SET_CONFIG_EVT on
