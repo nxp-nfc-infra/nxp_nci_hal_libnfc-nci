@@ -32,7 +32,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  Copyright 2018-2023 NXP
+ *  Copyright 2018-2024 NXP
  *
  ******************************************************************************/
 
@@ -1452,7 +1452,14 @@ void NFA_EnableDtamode(tNFA_eDtaModes eDtaMode) {
 tNFA_MW_VERSION NFA_GetMwVersion() {
   tNFA_MW_VERSION mwVer;
 
-  mwVer.validation = (NXP_EN_PN7220 << 2);
+  mwVer.validation = (NXP_EN_PN7150 << 0);
+  mwVer.validation |= (NXP_EN_PN7160 << 1);
+  mwVer.validation |= (NXP_EN_PN7161 << 2);
+  mwVer.validation |= (NXP_EN_PN7220 << 3);
+  mwVer.validation |= (NXP_EN_PN7221 << 4);
+  mwVer.validation |= (NXP_EN_PN7222 << 5);
+  mwVer.validation |= (NXP_EN_PN7223 << 6);
+
   mwVer.android_version = NXP_ANDROID_VER;
   DLOG_IF(INFO, nfc_debug_enabled)
       << StringPrintf("NFC MW Major Version: 0x%x", NFC_NXP_MW_VERSION_MAJ);

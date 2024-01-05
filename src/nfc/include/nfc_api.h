@@ -19,7 +19,7 @@
 /******************************************************************************
 
  *
- *  Copyright 2022-2023 NXP
+ *  Copyright 2022-2024 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -53,9 +53,13 @@
 #include "vendor_cfg.h"
 
 #if (NXP_EXTNS == TRUE)
-#define NXP_EN_PN7150 1
+#define NXP_EN_PN7150 0
 #define NXP_EN_PN7160 1
+#define NXP_EN_PN7161 1
 #define NXP_EN_PN7220 1
+#define NXP_EN_PN7221 1
+#define NXP_EN_PN7222 0
+#define NXP_EN_PN7223 0
 #define NXP_ANDROID_VER        (13U)   /* NXP android version */
 #define NFC_NXP_MW_VERSION_MAJ (0x20)  /* MW Major Version */
 #define NFC_NXP_MW_VERSION_MIN (0x03)  /* MW Minor Version */
