@@ -876,7 +876,9 @@ extern tNFC_STATUS rw_t1t_send_static_cmd(uint8_t opcode, uint8_t add,
                                           uint8_t dat);
 extern void rw_t1t_process_timeout(TIMER_LIST_ENT* p_tle);
 extern void rw_t1t_handle_op_complete(void);
-
+#if (NXP_EXTNS == TRUE)
+extern tNFC_STATUS RW_T4tNfceeInitCb(void);
+#endif
 #if (RW_NDEF_INCLUDED == TRUE)
 extern tRW_EVENT rw_t2t_info_to_event(const tT2T_CMD_RSP_INFO* p_info);
 extern void rw_t2t_handle_rsp(uint8_t* p_data);
