@@ -32,7 +32,9 @@
 #include "nfc_target.h"
 #include "rw_api.h"
 #include "tags_defs.h"
-
+#if(NXP_EXTNS == TRUE)
+#include "Nxp_Features.h"
+#endif
 /*****************************************************************************
 **  Constants and data types
 *****************************************************************************/
@@ -164,6 +166,9 @@ typedef uint8_t tNFA_PROTOCOL_MASK;
 #define NFA_DM_NFCC_TRANSPORT_ERR_EVT 7
 /* Result of NFA_SetPowerSubStateForScreenState */
 #define NFA_DM_SET_POWER_SUB_STATE_EVT 11
+#if (NXP_EXTNS == TRUE)
+typedef uint8_t tEnableChip;
+#endif
 /* T1T HR length            */
 #define NFA_T1T_HR_LEN T1T_HR_LEN
 /* Max UID length of T1/T2  */
@@ -1370,5 +1375,20 @@ extern uint8_t NFA_GetNCIVersion();
 **                  NFA_STATUS_FAILED otherwise
 *******************************************************************************/
 extern tNFA_STATUS NFA_SetPowerSubStateForScreenState(uint8_t ScreenState);
+
+#if (NXP_EXTNS == TRUE)
+/*******************************************************************************
+**
+** Function:        NFA_GetChipVersion
+**
+** Description:     This function gets the Chip Version
+**
+** Returns:         First 8 bit Major Version
+**                  Last 8 bit Minor Version
+**
+*******************************************************************************/
+extern tNFC_chipType NFA_GetChipVersion();
+
+#endif
 
 #endif /* NFA_API_H */

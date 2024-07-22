@@ -30,19 +30,11 @@
 #define NFA_EE_MAX_EE_SUPPORTED 5
  using namespace std;
 typedef enum {
-  unknown,
-  pn547C2,
-  pn65T,
-  pn548C2,
-  pn66T,
-  pn551,
-  pn67T,
-  pn553,
-  pn80T,
-  pn557,
-  pn81T
+  DEFAULT_CHIP_TYPE = 0x00,
+  pn7160,
+  pn7220,
+  pn7221
 } tNFC_chipType;
-
 typedef struct {
   tNFC_chipType chipType;
   std::string _FW_LIB_PATH;

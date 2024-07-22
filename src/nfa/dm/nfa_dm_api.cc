@@ -33,6 +33,7 @@
 
 #if (NXP_EXTNS == TRUE)
 #include "nfa_sys_int.h"
+#include "nfc_config.h"
 #endif
 
 using android::base::StringPrintf;
@@ -1317,3 +1318,42 @@ void NFA_EnableDtamode(tNFA_eDtaModes eDtaMode) {
   appl_dta_mode_flag = 0x01;
   nfa_dm_cb.eDtaMode = eDtaMode;
 }
+#if (NXP_EXTNS == TRUE)
+/*******************************************************************************
+**
+** Function         NFA_GetChipVersion
+**
+** Description      This function provide right Chip version.
+
+**
+** Returns          MW version
+**
+*******************************************************************************/
+tNFC_chipType NFA_GetChipVersion() {
+  tEnableChip enableChip;
+  DLOG_IF(INFO, nfc_debug_enabled) << __func__;
+  if (NfcConfig::hasKey(NAME_NXP_CHIP_TYPE)) {
+    enableChip = NfcConfig::getUnsigned(NAME_NXP_CHIP_TYPE);
+    DLOG_IF(INFO, nfc_debug_enabled)
+      << StringPrintf("%s: 0x%x ", __func__, enableChip);
+      switch(enableChip) {
+        case 0x01:
+            nfcFL.chipType = pn7160;
+            break;
+        case 0x04:
+            nfcFL.chipType = pn7220;
+            break;
+        default:
+            nfcFL.chipType = pn7220;
+      }
+    }
+    else {
+      DLOG_IF(INFO, nfc_debug_enabled)
+        << StringPrintf("%s: Unable to find Config", __func__);
+        nfcFL.chipType = pn7220;
+    }
+    DLOG_IF(INFO, nfc_debug_enabled)
+      << StringPrintf("%s: 0x%x ", __func__, nfcFL.chipType);
+  return nfcFL.chipType;
+}
+#endif
