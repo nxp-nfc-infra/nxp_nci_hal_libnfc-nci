@@ -35,6 +35,7 @@
 #include "metrics.h"
 #include "nci_defs.h"
 #include "nci_hmsgs.h"
+#include "nfa_tda_api.h"
 #include "nfc_api.h"
 #include "nfc_int.h"
 #include "nfc_target.h"
@@ -57,6 +58,8 @@ static tNFC_FW_VERSION nfc_fw_version;
 extern unsigned char appl_dta_mode_flag;
 extern bool nfc_debug_enabled;
 extern std::string nfc_storage_path;
+
+fp_process_tda_rsp_ntf_t fp_process_tda_rsp_ntf = NULL;
 
 static struct timeval timer_start;
 static struct timeval timer_end;
@@ -402,6 +405,12 @@ bool nfc_ncif_process_event(NFC_HDR* p_msg) {
     LOG(ERROR) << StringPrintf("Invalid NCI packet: p_msg->len (%d) < len (%d)",
                                p_msg->len, len);
     return free;
+  }
+
+  /* Feeding the rsp/ntf to CT Lib. Lib will ignore,
+     if the data is not relavent to it */
+  if (fp_process_tda_rsp_ntf != NULL) {
+    (void)fp_process_tda_rsp_ntf(p, p_msg->len);
   }
 
   NCI_MSG_PRS_HDR0(p, mt, pbf, gid);
