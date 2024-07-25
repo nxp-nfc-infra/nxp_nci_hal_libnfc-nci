@@ -18,6 +18,26 @@
 
 /******************************************************************************
  *
+ *  The original Work has been changed by NXP.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  Copyright 2024 NXP
+ *
+ ******************************************************************************/
+
+/******************************************************************************
+ *
  *  NFA interface for device management
  *
  ******************************************************************************/
@@ -1438,5 +1458,39 @@ tNFC_chipType NFA_GetChipVersion() {
     DLOG_IF(INFO, nfc_debug_enabled)
       << StringPrintf("%s: 0x%x ", __func__, nfcFL.chipType);
   return nfcFL.chipType;
+}
+/*******************************************************************************
+**
+** Function         NFA_GetMwVersion
+**
+** Description      This function provide right MW version.
+
+**
+** Returns          MW version
+**
+*******************************************************************************/
+tNFA_MW_VERSION NFA_GetMwVersion() {
+  tNFA_MW_VERSION mwVer;
+
+  mwVer.validation = (NXP_EN_PN7150 << 0);
+  mwVer.validation |= (NXP_EN_PN7160 << 1);
+  mwVer.validation |= (NXP_EN_PN7161 << 2);
+  mwVer.validation |= (NXP_EN_PN7220 << 3);
+  mwVer.validation |= (NXP_EN_PN7221 << 4);
+  mwVer.validation |= (NXP_EN_PN7222 << 5);
+  mwVer.validation |= (NXP_EN_PN7223 << 6);
+
+  mwVer.android_version = NXP_ANDROID_VER;
+  DLOG_IF(INFO, nfc_debug_enabled)
+      << StringPrintf("NFC MW Major Version: 0x%x", NFC_NXP_MW_VERSION_MAJ);
+  DLOG_IF(INFO, nfc_debug_enabled)
+      << StringPrintf("NFC MW Minor Version: 0x%x", NFC_NXP_MW_VERSION_MIN);
+  mwVer.major_version = NFC_NXP_MW_VERSION_MAJ;
+  mwVer.minor_version = NFC_NXP_MW_VERSION_MIN;
+  mwVer.rc_version = NFC_NXP_MW_RC_VERSION;
+  DLOG_IF(INFO, nfc_debug_enabled)
+      << StringPrintf("mwVer:Major=0x%x,Minor=0x%x", mwVer.major_version,
+                 mwVer.minor_version);
+  return mwVer;
 }
 #endif
