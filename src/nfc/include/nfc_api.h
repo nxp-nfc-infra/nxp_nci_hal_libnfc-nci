@@ -220,8 +220,13 @@ enum {
   NFC_NFCC_POWER_OFF_REVT,          /* 17 NFCC turned off               */
   NFC_SET_POWER_SUB_STATE_REVT,     /* 18 Set power sub state response  */
   NFC_NFCEE_PL_CONTROL_REVT,        /* NFCEE Power/Link Ctrl response*/
-  NFC_NFCEE_STATUS_REVT             /* NFCEE Status Notification     */
-                                    /* First vendor-specific rsp event  */
+#if (NXP_EXTNS == TRUE)
+  NFC_NFCEE_STATUS_REVT,       /* NFCEE Status Notification     */
+  NFC_NFC_HAL_BINDER_DIED_REVT /* NFC Hal Binder died Notification */
+                               /* First vendor-specific rsp event  */
+#else
+  NFC_NFCEE_STATUS_REVT /* NFCEE Status Notification     */
+#endif
 };
 typedef uint16_t tNFC_RESPONSE_EVT;
 

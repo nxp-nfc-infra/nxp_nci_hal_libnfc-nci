@@ -426,7 +426,11 @@ static void nfa_dm_nfc_response_cback(tNFC_RESPONSE_EVT event,
       conn_evt.status = p_data->status;
       nfa_dm_conn_cback_event_notify(NFA_UPDATE_RF_PARAM_RESULT_EVT, &conn_evt);
       break;
-
+#if (NXP_EXTNS == TRUE)
+    case NFC_NFC_HAL_BINDER_DIED_REVT:
+      (*nfa_dm_cb.p_dm_cback)(NFA_DM_NFC_HAL_BINDER_DIED_EVT, nullptr);
+      break;
+#endif
     default:
       break;
   }
