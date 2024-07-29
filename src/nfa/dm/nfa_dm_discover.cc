@@ -16,6 +16,25 @@
  ******************************************************************************/
 
 /******************************************************************************
+
+ *
+ *  Copyright 2022-2023 NXP
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ ******************************************************************************/
+
+/******************************************************************************
  *
  *  This file contains the action functions for device manager discovery
  *  function.
@@ -40,7 +59,9 @@
 #include "nfc_int.h"
 
 using android::base::StringPrintf;
-
+#if (NXP_EXTNS == TRUE)
+#include "Nxp_Features.h"
+#endif
 extern bool nfc_debug_enabled;
 
 /*
@@ -114,7 +135,11 @@ static uint8_t nfa_dm_get_rf_discover_config(
   }
 
   /* Check polling B */
-  if (dm_disc_mask & NFA_DM_DISC_MASK_PB_ISO_DEP) {
+  if (dm_disc_mask & (NFA_DM_DISC_MASK_PB_ISO_DEP
+#if (NXP_EXTNS == TRUE)
+                      | NFA_DM_DISC_MASK_PB_T3BT
+#endif
+    )) {
     disc_params[num_params].type = NFC_DISCOVERY_TYPE_POLL_B;
     disc_params[num_params].frequency = p_nfa_dm_rf_disc_freq_cfg->pb;
     num_params++;
@@ -130,6 +155,7 @@ static uint8_t nfa_dm_get_rf_discover_config(
 
     if (num_params >= max_params) return num_params;
   }
+
   if (NFC_GetNCIVersion() == NCI_VERSION_2_0) {
     /* Check polling Active mode  */
     if (dm_disc_mask & NFA_DM_DISC_MASK_PACM_NFC_DEP) {
@@ -168,7 +194,9 @@ static uint8_t nfa_dm_get_rf_discover_config(
 
     if (num_params >= max_params) return num_params;
   }
-
+#if (NXP_EXTNS == TRUE)
+  if(nfcFL.chipType == pn7160) {
+#endif
   /* Check listening B */
   if (dm_disc_mask & NFA_DM_DISC_MASK_LB_ISO_DEP) {
     disc_params[num_params].type = NFC_DISCOVERY_TYPE_LISTEN_B;
@@ -177,7 +205,9 @@ static uint8_t nfa_dm_get_rf_discover_config(
 
     if (num_params >= max_params) return num_params;
   }
-
+#if (NXP_EXTNS == TRUE)
+}
+#endif
   /* Check listening F */
   if (dm_disc_mask & (NFA_DM_DISC_MASK_LF_T3T | NFA_DM_DISC_MASK_LF_NFC_DEP)) {
     disc_params[num_params].type = NFC_DISCOVERY_TYPE_LISTEN_F;
@@ -222,7 +252,9 @@ static uint8_t nfa_dm_get_rf_discover_config(
 
     if (num_params >= max_params) return num_params;
   }
-
+#if (NXP_EXTNS == TRUE)
+  if(nfcFL.chipType == pn7160) {
+  /* B PRIME POLLING is not supported */
   /* Check polling B' */
   if (dm_disc_mask & NFA_DM_DISC_MASK_P_B_PRIME) {
     disc_params[num_params].type = NFC_DISCOVERY_TYPE_POLL_B_PRIME;
@@ -231,7 +263,12 @@ static uint8_t nfa_dm_get_rf_discover_config(
 
     if (num_params >= max_params) return num_params;
   }
-
+}
+#endif
+#if (NXP_EXTNS == TRUE)
+  if(nfcFL.chipType == pn7160) {
+#endif
+  /* KOVIO POLLING is not supported */
   /* Check polling KOVIO */
   if (dm_disc_mask & NFA_DM_DISC_MASK_P_KOVIO) {
     disc_params[num_params].type = NFC_DISCOVERY_TYPE_POLL_KOVIO;
@@ -240,7 +277,9 @@ static uint8_t nfa_dm_get_rf_discover_config(
 
     if (num_params >= max_params) return num_params;
   }
-
+#if (NXP_EXTNS == TRUE)
+}
+#endif
   /* Check listening ISO 15693 */
   if (dm_disc_mask & NFA_DM_DISC_MASK_L_ISO15693) {
     disc_params[num_params].type = NFC_DISCOVERY_TYPE_LISTEN_ISO15693;
@@ -249,7 +288,8 @@ static uint8_t nfa_dm_get_rf_discover_config(
 
     if (num_params >= max_params) return num_params;
   }
-
+#if (NXP_EXTNS == TRUE)
+  if(nfcFL.chipType == pn7160) {
   /* Check listening B' */
   if (dm_disc_mask & NFA_DM_DISC_MASK_L_B_PRIME) {
     disc_params[num_params].type = NFC_DISCOVERY_TYPE_LISTEN_B_PRIME;
@@ -258,7 +298,8 @@ static uint8_t nfa_dm_get_rf_discover_config(
 
     if (num_params >= max_params) return num_params;
   }
-
+}
+#endif
   return num_params;
 }
 
@@ -614,6 +655,10 @@ static tNFA_DM_DISC_TECH_PROTO_MASK nfa_dm_disc_get_disc_mask(
   } else if (NFC_DISCOVERY_TYPE_POLL_B == tech_n_mode) {
     if (protocol == NFC_PROTOCOL_ISO_DEP)
       disc_mask = NFA_DM_DISC_MASK_PB_ISO_DEP;
+#if (NXP_EXTNS == TRUE)
+    else if (protocol == NFC_PROTOCOL_T3BT)
+      disc_mask = NFA_DM_DISC_MASK_PB_T3BT;
+#endif
   } else if (NFC_DISCOVERY_TYPE_POLL_F == tech_n_mode) {
     if (protocol == NFC_PROTOCOL_T3T)
       disc_mask = NFA_DM_DISC_MASK_PF_T3T;
@@ -893,10 +938,17 @@ void nfa_dm_start_rf_discover(void) {
   nfa_ee_get_tech_route(NFA_EE_PWR_STATE_ON, nfa_dm_cb.disc_cb.listen_RT);
 
   if (nfa_dm_cb.disc_cb.excl_disc_entry.in_use) {
-    nfa_dm_set_rf_listen_mode_raw_config(&dm_disc_mask);
-    dm_disc_mask |= (nfa_dm_cb.disc_cb.excl_disc_entry.requested_disc_mask &
-                     NFA_DM_DISC_MASK_POLL);
-    nfa_dm_cb.disc_cb.excl_disc_entry.selected_disc_mask = dm_disc_mask;
+#if (NXP_EXTNS == TRUE)
+    if(nfcFL.chipType == pn7160) {
+#endif
+      nfa_dm_set_rf_listen_mode_raw_config(&dm_disc_mask);
+      dm_disc_mask |= (nfa_dm_cb.disc_cb.excl_disc_entry.requested_disc_mask &
+                       NFA_DM_DISC_MASK_POLL);
+      nfa_dm_cb.disc_cb.excl_disc_entry.selected_disc_mask = dm_disc_mask;
+#if (NXP_EXTNS == TRUE)
+  }
+#endif
+
   } else {
     /* Collect RF discovery request from sub-modules */
     for (xx = 0; xx < NFA_DM_DISC_NUM_ENTRIES; xx++) {
@@ -1064,7 +1116,13 @@ void nfa_dm_start_rf_discover(void) {
     /* if this is not for exclusive control */
     if (!nfa_dm_cb.disc_cb.excl_disc_entry.in_use) {
       /* update listening protocols in each NFC technology */
+#if (NXP_EXTNS == TRUE)
+      if(nfcFL.chipType == pn7160) {
       nfa_dm_set_rf_listen_mode_config(dm_disc_mask);
+      }
+#else
+      nfa_dm_set_rf_listen_mode_config(dm_disc_mask);
+#endif
     }
 
     /* Set polling duty cycle */

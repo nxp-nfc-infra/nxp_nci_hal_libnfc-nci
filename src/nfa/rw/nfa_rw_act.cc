@@ -17,6 +17,25 @@
  ******************************************************************************/
 
 /******************************************************************************
+
+ *
+ *  Copyright 2022-2023 NXP
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ ******************************************************************************/
+
+/******************************************************************************
  *
  *  This file contains the action functions the NFA_RW state machine.
  *
@@ -1016,7 +1035,12 @@ static void nfa_rw_handle_t4t_evt(tRW_EVENT event, tRW_DATA* p_rw_data) {
 
       nfa_dm_act_conn_cback_notify(NFA_FORMAT_CPLT_EVT, &conn_evt_data);
       break;
-
+#if (NXP_EXTNS == TRUE)
+    case RW_T3BT_RAW_READ_CPLT_EVT:
+      nfa_rw_command_complete();
+      nfa_dm_act_conn_cback_notify(NFA_ACTIVATED_EVT, &conn_evt_data);
+      break;
+#endif
     case RW_T4T_NDEF_READ_EVT: /* Segment of data received from type 4 tag */
       if (nfa_rw_cb.cur_op == NFA_RW_OP_READ_NDEF) {
         nfa_rw_store_ndef_rx_buf(p_rw_data);
@@ -1103,8 +1127,14 @@ static void nfa_rw_handle_t4t_evt(tRW_EVENT event, tRW_DATA* p_rw_data) {
 
     case RW_T4T_INTF_ERROR_EVT: /* RF Interface error event         */
       conn_evt_data.status = p_rw_data->status;
+#if (NXP_EXTNS == TRUE)
+     if((!appl_dta_mode_flag) && (conn_evt_data.status == NFC_STATUS_RF_PROTOCOL_ERR))
+       nfa_dm_act_conn_cback_notify(NFA_RW_INTF_ERROR_EVT, &conn_evt_data);
+     else
+       nfa_dm_rf_deactivate(NFA_DEACTIVATE_TYPE_DISCOVERY);
+#else
       nfa_dm_act_conn_cback_notify(NFA_RW_INTF_ERROR_EVT, &conn_evt_data);
-
+#endif
       nfa_rw_command_complete();
       nfa_rw_cb.cur_op = NFA_RW_OP_MAX;
       break;
@@ -1393,6 +1423,24 @@ static void nfa_rw_handle_i93_evt(tRW_EVENT event, tRW_DATA* p_rw_data) {
       break;
   }
 }
+#if (NXP_EXTNS == TRUE)
+static void nfa_rw_handle_t3bt_evt(tRW_EVENT event, __attribute__((unused)) tRW_DATA* p_rw_data) {
+
+  // tNFC_ACTIVATE_DEVT *activate_ntf =
+  // (tNFC_ACTIVATE_DEVT*)nfa_dm_cb.p_activate_ntf;
+  DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("nfa_rw_handle_t3bt_evt:");
+
+  switch (event) {
+    case RW_T3BT_RAW_READ_CPLT_EVT:
+      nfa_rw_command_complete();
+      break;
+    default:
+      DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("nfa_rw_handle_t3bt_evt: default event");
+      break;
+  }
+  nfa_dm_notify_activation_status(NFA_STATUS_OK, nullptr);
+}
+#endif
 
 /*******************************************************************************
 **
@@ -1473,13 +1521,13 @@ static void nfa_rw_handle_mfc_evt(tRW_EVENT event, tRW_DATA* p_rw_data) {
 
     /* NDEF write completed or failed*/
     case RW_MFC_NDEF_WRITE_CPLT_EVT:
+    case RW_MFC_NDEF_WRITE_FAIL_EVT:
+#if (NXP_EXTNS == TRUE)
       if (nfa_rw_cb.cur_op == NFA_RW_OP_WRITE_NDEF) {
         /* Update local cursize of ndef message */
         nfa_rw_cb.ndef_cur_size = nfa_rw_cb.ndef_wr_len;
       }
-      FALLTHROUGH_INTENDED;
-
-    case RW_MFC_NDEF_WRITE_FAIL_EVT:
+#endif
       /* Command complete - perform cleanup, notify the app */
       nfa_rw_command_complete();
       nfa_dm_act_conn_cback_notify(NFA_WRITE_CPLT_EVT, &conn_evt_data);
@@ -1520,7 +1568,14 @@ static void nfa_rw_cback(tRW_EVENT event, tRW_DATA* p_rw_data) {
   } else if (event < RW_I93_MAX_EVT) {
     /* Handle ISO 15693 tag events */
     nfa_rw_handle_i93_evt(event, p_rw_data);
-  } else if (event < RW_MFC_MAX_EVT) {
+  }
+#if (NXP_EXTNS == TRUE)
+  else if (event < RW_T3BT_MAX_EVT) {
+    /* Handle ISO 14443-3B tag events */
+    nfa_rw_handle_t3bt_evt(event, p_rw_data);
+  }
+#endif
+  else if (event < RW_MFC_MAX_EVT) {
     /* Handle Mifare Classic tag events */
     nfa_rw_handle_mfc_evt(event, p_rw_data);
   } else {
@@ -2344,6 +2399,20 @@ static bool nfa_rw_t3t_get_system_codes() {
   return true;
 }
 
+#if (NXP_EXTNS == TRUE)
+static bool nfa_rw_t3bt_get_pupi(__attribute__((unused)) tNFA_RW_MSG* p_data) {
+  tNFC_STATUS status;
+
+  status = RW_T3BtGetPupiID();
+
+  if (status != NFC_STATUS_OK) {
+    nfa_rw_command_complete();
+  }
+
+  return true;
+}
+#endif
+
 /*******************************************************************************
 **
 ** Function         nfa_rw_i93_command
@@ -2373,7 +2442,11 @@ static bool nfa_rw_i93_command(tNFA_RW_MSG* p_data) {
 
     case NFA_RW_OP_I93_STAY_QUIET:
       i93_command = I93_CMD_STAY_QUIET;
+#if (NXP_EXTNS == TRUE)
       status = RW_I93StayQuiet(p_data->op_req.params.i93_cmd.uid);
+#else
+      status = RW_I93StayQuiet(p_data->op_req.params.i93_cmd.p_data);
+#endif
       break;
 
     case NFA_RW_OP_I93_READ_SINGLE_BLOCK:
@@ -2588,7 +2661,11 @@ bool nfa_rw_activate_ntf(tNFA_RW_MSG* p_data) {
     if ((p_activate_params->protocol != NFA_PROTOCOL_T1T) &&
         (p_activate_params->protocol != NFA_PROTOCOL_T2T) &&
         (p_activate_params->protocol != NFA_PROTOCOL_T3T) &&
-        (p_activate_params->protocol != NFA_PROTOCOL_T5T)) {
+        (p_activate_params->protocol != NFA_PROTOCOL_T5T)
+#if (NXP_EXTNS == TRUE)
+        && (p_activate_params->protocol != NFA_PROTOCOL_T3BT)
+#endif
+        ) {
       nfa_rw_cb.protocol = NFA_PROTOCOL_INVALID;
     }
   } else if (p_activate_params->intf_param.type == NCI_INTERFACE_ISO_DEP) {
@@ -2660,6 +2737,13 @@ bool nfa_rw_activate_ntf(tNFA_RW_MSG* p_data) {
     memcpy(tag_params.t2t.uid, p_activate_params->rf_tech_param.param.pa.nfcid1,
            p_activate_params->rf_tech_param.param.pa.nfcid1_len);
   } else if (NFC_PROTOCOL_T3T == nfa_rw_cb.protocol) {
+#if (NXP_EXTNS == TRUE)
+    if (appl_dta_mode_flag) {
+      /* Incase of DTA mode Dont send commands to get system code. Just notify
+       * activation */
+      activate_notify = true;
+    } else {
+#endif
     /* Delay notifying upper layer of NFA_ACTIVATED_EVT until system codes
      * are retrieved */
     activate_notify = false;
@@ -2670,7 +2754,24 @@ bool nfa_rw_activate_ntf(tNFA_RW_MSG* p_data) {
     bool free_buf = nfa_rw_handle_op_req(&msg);
     CHECK(free_buf)
         << "nfa_rw_handle_op_req is holding on to soon-garbage stack memory.";
-  } else if (NFA_PROTOCOL_T5T == nfa_rw_cb.protocol) {
+#if (NXP_EXTNS == TRUE)
+    }
+#endif
+  }
+#if (NXP_EXTNS == TRUE)
+  else if (NFC_PROTOCOL_T3BT == nfa_rw_cb.protocol) {
+
+    activate_notify =
+        false; /* Delay notifying upper layer of NFA_ACTIVATED_EVT until system
+                  codes are retrieved */
+    tNFA_RW_MSG msg;
+    msg.op_req.op = NFA_RW_OP_T3BT_PUPI;
+    bool free_buf = nfa_rw_handle_op_req(&msg);
+    CHECK(free_buf)
+        << "nfa_rw_handle_op_req is holding on to soon-garbage stack memory.";
+  }
+#endif
+  else if (NFA_PROTOCOL_T5T == nfa_rw_cb.protocol) {
     /* Delay notifying upper layer of NFA_ACTIVATED_EVT to retrieve additional
      * tag infomation */
     nfa_rw_cb.flags |= NFA_RW_FL_ACTIVATION_NTF_PENDING;
@@ -2983,7 +3084,11 @@ bool nfa_rw_handle_op_req(tNFA_RW_MSG* p_data) {
     case NFA_RW_OP_I93_SET_ADDR_MODE:
       nfa_rw_i93_command(p_data);
       break;
-
+#if (NXP_EXTNS == TRUE)
+    case NFA_RW_OP_T3BT_PUPI:
+      nfa_rw_t3bt_get_pupi(p_data);
+      break;
+#endif
     default:
       LOG(ERROR) << StringPrintf("nfa_rw_handle_api: unhandled operation: %i",
                                  p_data->op_req.op);
@@ -3175,3 +3280,18 @@ void nfa_rw_command_complete(void) {
   /* Restart presence_check timer */
   nfa_rw_check_start_presence_check_timer(NFA_RW_PRESENCE_CHECK_INTERVAL);
 }
+
+#if (NXP_EXTNS == TRUE)
+void nfa_rw_update_pupi_id(uint8_t* p, uint8_t len) {
+  tNFC_ACTIVATE_DEVT* activate_ntf =
+      (tNFC_ACTIVATE_DEVT*)nfa_dm_cb.p_activate_ntf;
+
+  DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("nfa_rw_update_pupi_id:");
+  if (len != 0) {
+    activate_ntf->rf_tech_param.param.pb.pupiid_len = len;
+    memcpy(activate_ntf->rf_tech_param.param.pb.pupiid, p, len);
+  } else {
+    DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("nfa_rw_update_pupi_id: invalid resp_len=%d", len);
+  }
+}
+#endif

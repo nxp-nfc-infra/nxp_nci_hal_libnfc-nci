@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2019-2020,2022 NXP
+ *  Copyright 2019-2020,2022-2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -565,6 +565,11 @@ bool is_write_precondition_valid(tNFA_T4TNFCEE_MSG* p_data) {
  **
  *******************************************************************************/
 bool isReadPermitted(void) {
+  if (ccFileInfo.find(nfa_t4tnfcee_cb.cur_fileId) == ccFileInfo.end()) {
+    DLOG_IF(INFO, nfc_debug_enabled)
+        << StringPrintf("%s FileId Not found", __func__);
+    return false;
+  }
   return (ccFileInfo.find(nfa_t4tnfcee_cb.cur_fileId)->second.read_access ==
           T4T_NFCEE_READ_ALLOWED);
 }
@@ -579,6 +584,11 @@ bool isReadPermitted(void) {
  **
  *******************************************************************************/
 bool isWritePermitted(void) {
+  if (ccFileInfo.find(nfa_t4tnfcee_cb.cur_fileId) == ccFileInfo.end()) {
+    DLOG_IF(INFO, nfc_debug_enabled)
+        << StringPrintf("%s FileId Not found", __func__);
+    return false;
+  }
   DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf(
       "%s : 0x%2x", __func__,
       ccFileInfo.find(nfa_t4tnfcee_cb.cur_fileId)->second.write_access);
@@ -597,6 +607,11 @@ bool isWritePermitted(void) {
  **
  *******************************************************************************/
 bool isDataLenBelowMaxFileCapacity(void) {
+  if (ccFileInfo.find(nfa_t4tnfcee_cb.cur_fileId) == ccFileInfo.end()) {
+    DLOG_IF(INFO, nfc_debug_enabled)
+        << StringPrintf("%s FileId Not found", __func__);
+    return false;
+  }
   return (nfa_t4tnfcee_cb.dataLen <=
           (ccFileInfo.find(nfa_t4tnfcee_cb.cur_fileId)->second.capacity -
            T4TNFCEE_SIZEOF_LEN_BYTES));

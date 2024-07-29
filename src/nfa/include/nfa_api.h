@@ -18,6 +18,26 @@
 
 /******************************************************************************
  *
+ *  The original Work has been changed by NXP
+ *
+ *  Copyright 2023 NXP
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ ******************************************************************************/
+
+/******************************************************************************
+ *
  *  This is the public interface file for NFA, Broadcom's NFC application
  *  layer for mobile phones.
  *
@@ -137,6 +157,9 @@ typedef uint8_t tNFA_TECHNOLOGY_MASK;
 #define NFA_PROTOCOL_NFC_DEP NFC_PROTOCOL_NFC_DEP
 /* NFC_PROTOCOL_T5T in NCI2.0 and NFC_PROTOCOL_ISO15693 proprietary in NCI1.0*/
 #define NFA_PROTOCOL_T5T NFC_PROTOCOL_T5T
+#if(NXP_EXTNS == TRUE)
+#define NFA_PROTOCOL_T3BT NFC_PROTOCOL_T3BT
+#endif
 #define NFA_PROTOCOL_INVALID 0xFF
 typedef uint8_t tNFA_NFC_PROTOCOL;
 
@@ -271,6 +294,12 @@ typedef enum {
   NFA_DTA_LLCP_MODE = 0x00000002,
   NFA_DTA_HCEF_MODE = 0x00000004,
   NFA_DTA_CR8 = 0x00000080,
+  #if (NXP_EXTNS == TRUE)
+    NFA_DTA_CR9 = 0x00000090,
+    NFA_DTA_CR10 = 0x000000A0,
+    NFA_DTA_CR11 = 0x000000B0,
+    NFA_DTA_CR12 = 0x00000040,
+  #endif
 } tNFA_eDtaModes;
 
 #if (NXP_EXTNS == TRUE)

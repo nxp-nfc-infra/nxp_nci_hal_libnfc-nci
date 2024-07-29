@@ -17,6 +17,25 @@
  ******************************************************************************/
 
 /******************************************************************************
+
+ *
+ *  Copyright 2022-2023 NXP
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ ******************************************************************************/
+
+/******************************************************************************
  *
  *  This file contains the Near Field Communication (NFC) Reader/Writer mode
  *  related internal function / definitions.
@@ -913,6 +932,7 @@ extern void rw_t5t_sm_detect_ndef(NFC_HDR*);
 extern void rw_t5t_sm_update_ndef(NFC_HDR*);
 extern void rw_t5t_sm_set_read_only(NFC_HDR*);
 
+void nfa_rw_update_pupi_id(uint8_t* p, uint8_t len);
 extern void rw_t4t_handle_isodep_nak_rsp(uint8_t status, bool is_ntf);
 
 extern tNFC_STATUS rw_mfc_select(uint8_t selres, uint8_t uid[T1T_CMD_UID_LEN]);

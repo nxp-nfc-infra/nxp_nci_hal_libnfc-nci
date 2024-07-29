@@ -15,6 +15,26 @@
  *  limitations under the License.
  *
  ******************************************************************************/
+
+/******************************************************************************
+ *
+ *  The original Work has been changed by NXP
+ *
+ *  Copyright 2022-2023 NXP
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ ******************************************************************************/
 #include <aidl/android/hardware/nfc/BnNfc.h>
 #include <aidl/android/hardware/nfc/BnNfcClientCallback.h>
 #include <aidl/android/hardware/nfc/INfc.h>
@@ -37,6 +57,10 @@
 #include <hwbinder/ProcessState.h>
 
 #include "NfcAdaptation.h"
+#if (NXP_EXTNS == TRUE)
+#include <vendor/nxp/nxpnfc/2.0/INxpNfc.h>
+#include <hidl/LegacySupport.h>
+#endif
 #include "debug_nfcsnoop.h"
 #include "nfa_api.h"
 #include "nfa_rw_api.h"
@@ -62,6 +86,15 @@ using INfcV1_2 = android::hardware::nfc::V1_2::INfc;
 using NfcVendorConfigV1_1 = android::hardware::nfc::V1_1::NfcConfig;
 using NfcVendorConfigV1_2 = android::hardware::nfc::V1_2::NfcConfig;
 using android::hardware::nfc::V1_1::INfcClientCallback;
+#if(NXP_EXTNS == TRUE)
+using ::android::wp;
+using ::android::hardware::hidl_death_recipient;
+using android::hardware::configureRpcThreadpool;
+using vendor::nxp::nxpnfc::V2_0::INxpNfc;
+using ::android::hardware::nfc::V1_0::NfcStatus;
+ThreadMutex NfcAdaptation::sIoctlLock;
+sp<INxpNfc> NfcAdaptation::mHalNxpNfc;
+#endif
 using android::hardware::hidl_vec;
 using INfcAidl = ::aidl::android::hardware::nfc::INfc;
 using NfcAidlConfig = ::aidl::android::hardware::nfc::NfcConfig;
@@ -90,6 +123,9 @@ NfcAdaptation* NfcAdaptation::mpInstance = nullptr;
 ThreadMutex NfcAdaptation::sLock;
 ThreadCondVar NfcAdaptation::mHalOpenCompletedEvent;
 ThreadCondVar NfcAdaptation::mHalCloseCompletedEvent;
+#if (NXP_EXTNS == TRUE)
+sem_t NfcAdaptation::mSemHalDataCallBackEvent;
+#endif
 sp<INfc> NfcAdaptation::mHal;
 sp<INfcV1_1> NfcAdaptation::mHal_1_1;
 sp<INfcV1_2> NfcAdaptation::mHal_1_2;
@@ -187,11 +223,17 @@ class NfcHalDeathRecipient : public hidl_death_recipient {
     ALOGE(
         "NfcHalDeathRecipient::serviceDied - Nfc-Hal service died. Killing "
         "NfcService");
+#if (NXP_EXTNS == TRUE)
+    if (nfc_cb.p_resp_cback) {
+      (*nfc_cb.p_resp_cback)(NFC_NFC_HAL_BINDER_DIED_REVT, nullptr);
+      nfc_cb.p_resp_cback = nullptr;
+    }
+#endif
     if (mNfcDeathHal) {
       mNfcDeathHal->unlinkToDeath(this);
     }
     mNfcDeathHal = NULL;
-    exit(0);
+    abort();
   }
   void finalize() {
     if (mNfcDeathHal) {
@@ -318,6 +360,143 @@ NfcAdaptation& NfcAdaptation::GetInstance() {
   return *mpInstance;
 }
 
+#if (NXP_EXTNS == TRUE)
+/*******************************************************************************
+ ** Function         HalGetProperty_cb
+ **
+ ** Description      This is a callback for HalGetProperty. It shall be called
+ **                  from HAL to return the value of requested property.
+ **
+ ** Parameters       ::android::hardware::hidl_string
+ **
+ ** Return           void
+ *********************************************************************/
+static void HalGetProperty_cb(::android::hardware::hidl_string value) {
+  NfcAdaptation::GetInstance().propVal = value;
+  if (NfcAdaptation::GetInstance().propVal.size()) {
+    DLOG_IF(INFO, nfc_debug_enabled)
+        << StringPrintf("%s: received value -> %s", __func__,
+                        NfcAdaptation::GetInstance().propVal.c_str());
+  } else {
+    DLOG_IF(INFO, nfc_debug_enabled)
+        << StringPrintf("%s: No Key found in HAL", __func__);
+  }
+  return;
+}
+
+/*******************************************************************************
+ **
+ ** Function         HalGetProperty
+ **
+ ** Description      It shall be used to get property value of the given Key
+ **
+ ** Parameters       string key
+ **
+ ** Returns          If Key is found, returns the respective property values
+ **                  else returns the null/empty string
+ *******************************************************************************/
+string NfcAdaptation::HalGetProperty(string key) {
+  string value;
+  DLOG_IF(INFO, nfc_debug_enabled)
+      << StringPrintf("%s: enter key %s", __func__, key.c_str());
+  if (mHalNxpNfc != NULL) {
+    /* Synchronous HIDL call, will be returned only after
+     * HalGetProperty_cb() is called from HAL*/
+    mHalNxpNfc->getVendorParam(key, HalGetProperty_cb);
+    value = propVal;    /* Copy the string received from HAL */
+    propVal.assign(""); /* Clear the global string variable  */
+  } else {
+    DLOG_IF(INFO, nfc_debug_enabled)
+        << StringPrintf("%s: mHalNxpNfc is NULL", __func__);
+  }
+
+  return value;
+}
+/*******************************************************************************
+ **
+ ** Function         HalSetProperty
+ **
+ ** Description      It shall be called from libnfc-nci to set the value of
+ *given
+ **                  key in HAL context.
+ **
+ ** Parameters       string key, string value
+ **
+ ** Returns          true if successfully saved the value of key, else false
+ *******************************************************************************/
+bool NfcAdaptation::HalSetProperty(string key, string value) {
+  bool status = false;
+  if (mHalNxpNfc != NULL) {
+    status = mHalNxpNfc->setVendorParam(key, value);
+  } else {
+    DLOG_IF(INFO, nfc_debug_enabled)
+        << StringPrintf("%s: mHalNxpNfc is NULL", __func__);
+  }
+  return status;
+}
+
+/*******************************************************************************
+ **
+ ** Function         HalSetTransitConfig
+ **
+ ** Description      It shall be called from libnfc-nci to set the value of
+ *given
+ **                  key in HAL context.
+ **
+ ** Parameters       string key, string value
+ **
+ ** Returns          true if successfully saved the value of key, else false
+ *******************************************************************************/
+/*
+bool NfcAdaptation::HalSetTransitConfig(char * strval) {
+  bool status = false;
+  if (mHalNxpNfc != NULL) {
+    status = mHalNxpNfc->setNxpTransitConfig(strval);
+  } else {
+    DLOG_IF(INFO, nfc_debug_enabled)
+        << StringPrintf("%s: mHalNxpNfc is NULL", __func__);
+  }
+  return status;
+}
+*/
+/*******************************************************************************
+**
+** Function:    NfcAdaptation::HalWriteIntf
+**
+** Description: Write NCI message to the controller.
+**
+** Returns:     None.
+**
+*******************************************************************************/
+void NfcAdaptation::HalWriteIntf(uint16_t data_len, uint8_t* p_data) {
+  DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("%s: Enter ", __func__);
+  int semval = 0;
+  int sem_timedout = 2, s;
+
+  sem_getvalue(&mSemHalDataCallBackEvent, &semval);
+  //Reset semval to 0x00
+  while (semval > 0x00) {
+    s = sem_wait(&mSemHalDataCallBackEvent);
+    if (s == -1) {
+      ALOGE("%s: sem_wait failed !!!", __func__);
+    }
+    sem_getvalue(&mSemHalDataCallBackEvent, &semval);
+  }
+
+  HalWrite(data_len, p_data);
+
+  struct timespec ts;
+  clock_gettime(CLOCK_REALTIME, &ts);
+  ts.tv_sec += sem_timedout;
+  while ((s = sem_timedwait(&mSemHalDataCallBackEvent, &ts)) == -1 &&
+           errno == EINTR){
+    continue;
+  }
+  if (s == -1) {
+    ALOGE("%s: sem_timedout Timed Out !!!", __func__);
+  }
+}
+#endif
 void NfcAdaptation::GetVendorConfigs(
     std::map<std::string, ConfigValue>& configMap) {
   NfcVendorConfigV1_2 configValue;
@@ -714,6 +893,16 @@ void NfcAdaptation::InitializeHalDeviceContext() {
   mHalEntryFuncs.control_granted = HalControlGranted;
   mHalEntryFuncs.power_cycle = HalPowerCycle;
   mHalEntryFuncs.get_max_ee = HalGetMaxNfcee;
+
+#if (NXP_EXTNS == TRUE)
+  LOG(INFO) << StringPrintf("%s: INxpNfc::tryGetService()", func);
+  mHalNxpNfc = INxpNfc::tryGetService();
+  if (mHalNxpNfc != nullptr) {
+    DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("%s: INxpNfc::getService() returned %p (%s)",
+             func, mHalNxpNfc.get(),
+             (mHalNxpNfc->isRemote() ? "remote" : "local"));
+  }
+#endif
   LOG(INFO) << StringPrintf("%s: INfc::getService()", func);
   mAidlHal = nullptr;
   mHal = mHal_1_1 = mHal_1_2 = nullptr;
@@ -1065,7 +1254,7 @@ void NfcAdaptation::HalAidlBinderDiedImpl() {
                            this);
     mAidlHal = nullptr;
   }
-  exit(0);
+  abort();
 }
 
 // static
@@ -1202,3 +1391,19 @@ AutoThreadMutex::AutoThreadMutex(ThreadMutex& m) : mm(m) { mm.lock(); }
 **
 *******************************************************************************/
 AutoThreadMutex::~AutoThreadMutex() { mm.unlock(); }
+
+#if (NXP_EXTNS == TRUE)
+/***************************************************************************
+**
+** Function         initializeGlobalAppDtaMode.
+**
+** Description      initialize Dta App Mode flag.
+**
+** Returns          None.
+**
+***************************************************************************/
+void initializeGlobalAppDtaMode() {
+  appl_dta_mode_flag = 0x01;
+  ALOGD("%s: DTA Enabled", __func__);
+}
+#endif

@@ -15,7 +15,24 @@
  *  limitations under the License.
  *
  ******************************************************************************/
+/******************************************************************************
 
+ *
+ *  Copyright 2023 NXP
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ ******************************************************************************/
 /******************************************************************************
  *
  *  This file contains functions that interface with the NFC NCI transport.
@@ -44,9 +61,13 @@
 
 /* NFC mandates support for at least one logical connection;
  * Update max_conn to the NFCC capability on InitRsp */
+#if (NXP_EXTNS == TRUE)
+#define NFC_SET_MAX_CONN_DEFAULT() \
+  { nfc_cb.max_conn = 2; }
+#else
 #define NFC_SET_MAX_CONN_DEFAULT() \
   { nfc_cb.max_conn = 1; }
-
+#endif
 #else /* NFC_RW_ONLY */
 #define ce_init()
 #define llcp_init()
@@ -439,7 +460,12 @@ void nfc_main_handle_hal_evt(tNFC_HAL_EVT_MSG* p_msg) {
           } else {
             nfc_set_state(NFC_STATE_NONE);
             (*nfc_cb.p_resp_cback)(NFC_DISABLE_REVT, nullptr);
+#if (NXP_EXTNS == TRUE)
+            /* if p_resp_cback is nullfied, NFC HAL binder died will not reach
+             * Nfc Service artf1039993 to revert this change later */
+#else
             nfc_cb.p_resp_cback = nullptr;
+#endif
           }
         } else {
           /* found error during initialization */
@@ -752,7 +778,12 @@ void NFC_Disable(void) {
     nfc_set_state(NFC_STATE_NONE);
     if (nfc_cb.p_resp_cback) {
       (*nfc_cb.p_resp_cback)(NFC_DISABLE_REVT, nullptr);
+#if (NXP_EXTNS == TRUE)
+      /* if p_resp_cback is nullfied, NFC HAL binder died will not reach Nfc
+       * Service artf1039993 to revert this change later */
+#else
       nfc_cb.p_resp_cback = nullptr;
+#endif
     }
     return;
   }

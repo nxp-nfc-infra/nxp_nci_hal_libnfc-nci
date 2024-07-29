@@ -55,6 +55,9 @@ class ConfigFile {
 
   bool isEmpty();
   void clear();
+#if (NXP_EXTNS == TRUE)
+  std::string cur_file_name_ = "";
+#endif
 
  private:
   ConfigValue& getValue(const std::string& key);

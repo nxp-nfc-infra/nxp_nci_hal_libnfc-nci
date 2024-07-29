@@ -120,6 +120,27 @@ static void *ct_init(void *x) {
   }
   return NULL;
 }
+
+/*******************************************************************************
+**
+** Function         ct_deinit
+**
+** Description      Deinitialize the CT Lib
+**
+** Returns          None
+**
+*******************************************************************************/
+static void *ct_deinit(void *x) {
+  (void)x;
+  DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("%s Enter", __func__);
+  if (fp_ct_de_init_ext != NULL) {
+    NFC_STATUS status = fp_ct_de_init_ext();
+    if (status != NFC_STATUS_SUCCESS) {
+      DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("%s Failed", __func__);
+    }
+  }
+  return NULL;
+}
 /*******************************************************************************
 **
 ** Function         nfa_tda_sys_enable
@@ -152,6 +173,7 @@ void initialize_ct_lib() {
   p_nfc_ct_one_bin_handle = dlopen("/system/lib64/nfc_tda.so", RTLD_NOW);
   if (p_nfc_ct_one_bin_handle == NULL) {
     LOG(ERROR) << StringPrintf("Error : opening (/system/lib64/nfc_tda.so) !!");
+    return;
   }
 
   if ((fp_ct_init_ext = (fp_ct_init_ext_t)dlsym(p_nfc_ct_one_bin_handle,
@@ -240,5 +262,11 @@ bool nfa_tda_handle_event(NFC_HDR *p_msg) {
 ** Returns          void
 **
 *******************************************************************************/
-void nfa_tda_sys_disable(void) { nfa_sys_deregister(NFA_ID_TDA); }
+void nfa_tda_sys_disable(void) {
+  nfa_sys_deregister(NFA_ID_TDA);
+
+  DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("%s", __func__);
+  pthread_t thread_id;
+  pthread_create(&thread_id, NULL, ct_deinit, NULL);
+}
 #endif

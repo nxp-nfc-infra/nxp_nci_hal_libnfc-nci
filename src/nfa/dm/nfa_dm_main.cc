@@ -17,6 +17,25 @@
  ******************************************************************************/
 
 /******************************************************************************
+
+ *
+ *  Copyright 2022-2023 NXP
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ ******************************************************************************/
+
+/******************************************************************************
  *
  *  This is the main implementation file for the NFA device manager.
  *
@@ -180,7 +199,11 @@ bool nfa_dm_is_protocol_supported(tNFC_PROTOCOL protocol, uint8_t sel_res) {
           (protocol == NFC_PROTOCOL_T3T) ||
           (protocol == NFC_PROTOCOL_ISO_DEP) ||
           (protocol == NFC_PROTOCOL_NFC_DEP) ||
-          (protocol == NFC_PROTOCOL_T5T) || (protocol == NFC_PROTOCOL_MIFARE));
+          (protocol == NFC_PROTOCOL_T5T) || (protocol == NFC_PROTOCOL_MIFARE)
+#if (NXP_EXTNS == TRUE)
+          || (protocol == NFC_PROTOCOL_T3BT)
+#endif
+          );
 }
 /*******************************************************************************
 **
