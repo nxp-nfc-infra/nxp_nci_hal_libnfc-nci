@@ -56,17 +56,16 @@ const tNFA_T4TNFCEE_ACTION nfa_t4tnfcee_action_tbl[] = {
 **
 *******************************************************************************/
 void nfa_t4tnfcee_init(void) {
-/*TODO artf1172478: Fix the chiptype version read issue */
-//  if (NfcConfig::hasKey(NAME_NXP_T4T_NFCEE_ENABLE)) {
-//    if (NFA_T4T_NFCEE_ENANLE_BIT_POS & NfcConfig::getUnsigned(NAME_NXP_T4T_NFCEE_ENABLE)) {
+  if (NfcConfig::hasKey(NAME_NXP_T4T_NFCEE_ENABLE)) {
+    if (NFA_T4T_NFCEE_ENANLE_BIT_POS & NfcConfig::getUnsigned(NAME_NXP_T4T_NFCEE_ENABLE)) {
       DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("nfa_t4tnfcee_init () updated ...");
       /* initialize control block */
       memset(&nfa_t4tnfcee_cb, 0, sizeof(tNFA_T4TNFCEE_CB));
       nfa_t4tnfcee_cb.t4tnfcee_state = NFA_T4TNFCEE_STATE_DISABLED;
       /* register message handler on NFA SYS */
       nfa_sys_register(NFA_ID_T4TNFCEE, &nfa_t4tnfcee_sys_reg);
-//   }
-// }
+   }
+ }
 }
 
 /*******************************************************************************
