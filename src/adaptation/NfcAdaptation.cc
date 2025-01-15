@@ -20,7 +20,7 @@
  *
  *  The original Work has been changed by NXP
  *
- *  Copyright 2022-2024 NXP
+ *  Copyright 2022-2025 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -280,9 +280,17 @@ class NfcAidlClientCallback
         break;
       case NfcAidlEvent::ERROR:
       default:
+#if (NXP_EXTNS == TRUE)
+        if ((int)event == HAL_NFC_FW_UPDATE_STATUS_EVT) {
+          e_num = HAL_NFC_FW_UPDATE_STATUS_EVT;
+        } else {
+          e_num = HAL_NFC_ERROR_EVT;
+        }
+#else
         e_num = HAL_NFC_ERROR_EVT;
-    }
-    switch (event_status) {
+#endif
+      }
+      switch (event_status) {
       case NfcAidlStatus::OK:
         s_num = HAL_NFC_STATUS_OK;
         break;
@@ -1209,18 +1217,25 @@ void NfcAdaptation::HalDownloadFirmwareCallback(nfc_event_t event,
   DLOG_IF(INFO, nfc_debug_enabled)
       << StringPrintf("%s: event=0x%X", func, event);
   switch (event) {
-    case HAL_NFC_OPEN_CPLT_EVT: {
-      DLOG_IF(INFO, nfc_debug_enabled)
-          << StringPrintf("%s: HAL_NFC_OPEN_CPLT_EVT", func);
-      if (event_status == HAL_NFC_STATUS_OK) isDownloadFirmwareCompleted = true;
-      mHalOpenCompletedEvent.signal();
-      break;
-    }
-    case HAL_NFC_CLOSE_CPLT_EVT: {
-      DLOG_IF(INFO, nfc_debug_enabled)
-          << StringPrintf("%s: HAL_NFC_CLOSE_CPLT_EVT", func);
-      break;
-    }
+#if (NXP_EXTNS == TRUE)
+  case HAL_NFC_FW_UPDATE_STATUS_EVT:
+    DLOG_IF(INFO, nfc_debug_enabled)
+        << StringPrintf("%s: HAL_NFC_FW_UPDATE_STATUS_EVT", func);
+    break;
+#endif
+  case HAL_NFC_OPEN_CPLT_EVT: {
+    DLOG_IF(INFO, nfc_debug_enabled)
+        << StringPrintf("%s: HAL_NFC_OPEN_CPLT_EVT", func);
+    if (event_status == HAL_NFC_STATUS_OK)
+      isDownloadFirmwareCompleted = true;
+    mHalOpenCompletedEvent.signal();
+    break;
+  }
+  case HAL_NFC_CLOSE_CPLT_EVT: {
+    DLOG_IF(INFO, nfc_debug_enabled)
+        << StringPrintf("%s: HAL_NFC_CLOSE_CPLT_EVT", func);
+    break;
+  }
   }
 }
 

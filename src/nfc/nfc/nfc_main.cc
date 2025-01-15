@@ -18,7 +18,7 @@
 /******************************************************************************
 
  *
- *  Copyright 2023-2024 NXP
+ *  Copyright 2023-2025 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -177,6 +177,10 @@ static std::string nfc_hal_event_name(uint8_t event) {
       return "HAL_NFC_ERROR_EVT";
     case HAL_HCI_NETWORK_RESET:
       return "HCI_NETWORK_RESET";
+#if (NXP_EXTNS == TRUE)
+    case HAL_NFC_FW_UPDATE_STATUS_EVT:
+      return "HAL_NFC_FW_UPDATE_STATUS_EVT";
+#endif
     default:
       return "???? UNKNOWN EVENT";
   }
