@@ -15,6 +15,24 @@
  *  limitations under the License.
  *
  ******************************************************************************/
+/******************************************************************************
+
+ *
+ *  Copyright 2022-2025 NXP
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ ******************************************************************************/
 
 /******************************************************************************
  *
@@ -419,7 +437,11 @@ static void nfa_dm_nfc_response_cback(tNFC_RESPONSE_EVT event,
       conn_evt.status = p_data->status;
       nfa_dm_conn_cback_event_notify(NFA_UPDATE_RF_PARAM_RESULT_EVT, &conn_evt);
       break;
-
+#if (NXP_EXTNS == TRUE)
+    case NFC_NFC_HAL_BINDER_DIED_REVT:
+      (*nfa_dm_cb.p_dm_cback)(NFA_DM_NFC_HAL_BINDER_DIED_EVT, nullptr);
+      break;
+#endif
     default:
       break;
   }
