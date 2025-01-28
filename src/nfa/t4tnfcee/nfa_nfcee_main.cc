@@ -27,8 +27,6 @@
 #if (NXP_EXTNS == TRUE)
 using android::base::StringPrintf;
 
-extern bool nfc_debug_enabled;
-
 tNFA_T4TNFCEE_CB nfa_t4tnfcee_cb;
 void nfa_t4tnfcee_info_cback(tNFA_EE_EVT event, tNFA_EE_CBACK_DATA* p_data);
 static void nfa_t4tnfcee_sys_enable(void);
