@@ -18,6 +18,25 @@
 
 /******************************************************************************
  *
+ *  The original Work has been changed by NXP.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  Copyright 2024-2025 NXP
+ *
+ ******************************************************************************/
+/******************************************************************************
+ *
  *  NFA interface for device management
  *
  ******************************************************************************/
@@ -34,6 +53,7 @@
 #if (NXP_EXTNS == TRUE)
 #include "nfa_sys_int.h"
 #include "nfc_config.h"
+extern void nfa_t4tnfcee_init();
 #endif
 
 using android::base::StringPrintf;
@@ -68,6 +88,11 @@ void NFA_Init(tHAL_NFC_ENTRY* p_hal_entry_tbl) {
   nfa_ee_init();
   if (nfa_ee_max_ee_cfg != 0) {
     nfa_dm_cb.get_max_ee = p_hal_entry_tbl->get_max_ee;
+#if (NXP_EXTNS == TRUE)
+  if (nfcFL.chipType == pn7160) {
+      nfa_t4tnfcee_init();
+  }
+#endif
     nfa_hci_init();
   }
   nfa_wlc_init();
