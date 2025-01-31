@@ -442,30 +442,6 @@ bool NfcAdaptation::HalSetProperty(string key, string value) {
 }
 
 /*******************************************************************************
- **
- ** Function         HalSetTransitConfig
- **
- ** Description      It shall be called from libnfc-nci to set the value of
- *given
- **                  key in HAL context.
- **
- ** Parameters       string key, string value
- **
- ** Returns          true if successfully saved the value of key, else false
- *******************************************************************************/
-/*
-bool NfcAdaptation::HalSetTransitConfig(char * strval) {
-  bool status = false;
-  if (mHalNxpNfc != NULL) {
-    status = mHalNxpNfc->setNxpTransitConfig(strval);
-  } else {
-    DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("%s: mHalNxpNfc is NULL", __func__);
-  }
-  return status;
-}
-*/
-/*******************************************************************************
 **
 ** Function:    NfcAdaptation::HalWriteIntf
 **

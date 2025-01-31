@@ -179,7 +179,6 @@ class NfcAdaptation {
   static void HalWrite(uint16_t data_len, uint8_t* p_data);
 #if (NXP_EXTNS == TRUE)
   static void HalWriteIntf(uint16_t data_len, uint8_t* p_data);
-// static bool HalSetTransitConfig(char * strval);
 #endif
   static bool HalPrediscover();
   static void HalControlGranted();
