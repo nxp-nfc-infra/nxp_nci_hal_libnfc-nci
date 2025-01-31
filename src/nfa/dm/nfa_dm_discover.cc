@@ -1108,9 +1108,14 @@ void nfa_dm_start_rf_discover(void) {
     /* if this is not for exclusive control */
     if (!nfa_dm_cb.disc_cb.excl_disc_entry.in_use) {
       /* update listening protocols in each NFC technology */
+#if (NXP_EXTNS == TRUE)
+      if (nfcFL.chipType == pn7160) {
+        nfa_dm_set_rf_listen_mode_config(dm_disc_mask);
+      }
+#else
       nfa_dm_set_rf_listen_mode_config(dm_disc_mask);
+#endif
     }
-
     /* Set polling duty cycle */
     nfa_dm_set_total_duration();
     nfa_dm_cb.disc_cb.dm_disc_mask = dm_disc_mask;
