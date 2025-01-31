@@ -155,7 +155,13 @@ void nfa_ee_sys_enable(void) {
 
   if (nfa_ee_max_ee_cfg) {
     /* collect NFCEE information */
-#if (NXP_EXTNS != TRUE)
+#if (NXP_EXTNS == TRUE)
+    if (nfcFL.chipType == pn7160) {
+      NFC_NfceeDiscover(true);
+      nfa_sys_start_timer(&nfa_ee_cb.discv_timer, NFA_EE_DISCV_TIMEOUT_EVT,
+                          NFA_EE_DISCV_TIMEOUT_VAL);
+    }
+#else
     NFC_NfceeDiscover(true);
     nfa_sys_start_timer(&nfa_ee_cb.discv_timer, NFA_EE_DISCV_TIMEOUT_EVT,
                         NFA_EE_DISCV_TIMEOUT_VAL);
