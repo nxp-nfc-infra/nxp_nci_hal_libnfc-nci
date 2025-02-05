@@ -395,7 +395,14 @@ typedef uint8_t tNCI_INTF_TYPE;
 #define NCI_PROTOCOL_T5T 0x06
 #define NCI_PROTOCOL_ISO_DEP 0x04
 #define NCI_PROTOCOL_NFC_DEP 0x05
-
+/**********************************************
+ * Proprietary Protocols
+ **********************************************/
+#if (NXP_EXTNS == TRUE)
+#ifndef NCI_PROTOCOL_T3BT
+#define NCI_PROTOCOL_T3BT 0x8b
+#endif
+#endif
 /* Discovery Types/Detected Technology and Mode */
 #define NCI_DISCOVERY_TYPE_POLL_A 0x00
 #define NCI_DISCOVERY_TYPE_POLL_B 0x01
@@ -404,6 +411,11 @@ typedef uint8_t tNCI_INTF_TYPE;
 #define NCI_DISCOVERY_TYPE_LISTEN_A 0x80
 #define NCI_DISCOVERY_TYPE_LISTEN_B 0x81
 #define NCI_DISCOVERY_TYPE_LISTEN_F 0x82
+#if (NXP_EXTNS == TRUE)
+#define NCI_DISCOVERY_TYPE_LISTEN_A_ACTIVE 0x83
+#define NCI_DISCOVERY_TYPE_LISTEN_F_ACTIVE 0x85
+#define NCI_DISCOVERY_TYPE_POLL_A_ACTIVE 0x03
+#endif
 #define NCI_DISCOVERY_TYPE_LISTEN_ISO15693 0x86
 
 typedef uint8_t tNCI_DISCOVERY_TYPE;
