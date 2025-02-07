@@ -1034,6 +1034,10 @@ static void rw_mfc_handle_read_op(uint8_t* data) {
       saved_length = p_mfc->ndef_length;
 
       if (p_mfc->work_offset == 0) {
+#if (NXP_EXTNS != TRUE)
+        /* The Ndef Message offset may be present in the read 16 bytes */
+        offset = p_mfc->ndef_start_pos;
+#endif
         if (!rw_nfc_decodeTlv(data)) {
           failed = true;
           LOG(VERBOSE) << __func__ << " FAILED finding TLV";

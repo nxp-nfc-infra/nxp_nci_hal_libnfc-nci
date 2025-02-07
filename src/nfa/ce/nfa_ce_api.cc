@@ -406,7 +406,11 @@ tNFA_STATUS NFA_CeSetIsoDepListenTech(tNFA_TECHNOLOGY_MASK tech_mask) {
       (NFA_TECHNOLOGY_MASK_A | NFA_TECHNOLOGY_MASK_B);
 
   LOG(VERBOSE) << StringPrintf("0x%x", tech_mask);
+#if (NXP_EXTNS == TRUE)
+  if (((tech_mask & ~use_mask) != 0)) {
+#else
   if (((tech_mask & use_mask) == 0) || ((tech_mask & ~use_mask) != 0)) {
+#endif
     LOG(ERROR) << StringPrintf(
         "NFA_CeSetIsoDepListenTech: Invalid technology mask");
     return (NFA_STATUS_INVALID_PARAM);

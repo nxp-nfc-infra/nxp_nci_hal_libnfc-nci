@@ -124,6 +124,9 @@ void ConfigFile::parseFromFile(const std::string& file_name) {
   bool config_read = ReadFileToString(file_name, &config);
   CHECK(config_read);
   LOG(INFO) << "ConfigFile - Parsing file '" << file_name << "'";
+#if (NXP_EXTNS == TRUE)
+  cur_file_name_ = file_name;
+#endif
   parseFromString(config);
 }
 
