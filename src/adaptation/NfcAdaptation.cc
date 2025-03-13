@@ -53,6 +53,7 @@
 #if (NXP_EXTNS == TRUE)
 #include <hidl/LegacySupport.h>
 #include <vendor/nxp/nxpnfc/2.0/INxpNfc.h>
+#include <aidl/vendor/nxp/nxpnfc_aidl/INxpNfc.h>
 #endif
 #include "debug_nfcsnoop.h"
 #include "nfa_api.h"
@@ -86,6 +87,10 @@ using ::android::hardware::nfc::V1_0::NfcStatus;
 using vendor::nxp::nxpnfc::V2_0::INxpNfc;
 ThreadMutex NfcAdaptation::sIoctlLock;
 sp<INxpNfc> NfcAdaptation::mHalNxpNfc;
+std::string NXPNFC_AIDL_HAL_SERVICE_NAME =
+    "vendor.nxp.nxpnfc_aidl.INxpNfc/default";
+using INxpNfcAidl = ::aidl::vendor::nxp::nxpnfc_aidl::INxpNfc;
+std::shared_ptr<INxpNfcAidl> NfcAdaptation::mAidlHalNxpNfc;
 #endif
 using android::hardware::hidl_vec;
 using INfcAidl = ::aidl::android::hardware::nfc::INfc;
@@ -408,7 +413,9 @@ static void HalGetProperty_cb(::android::hardware::hidl_string value) {
 string NfcAdaptation::HalGetProperty(string key) {
   string value;
   LOG(INFO) << StringPrintf("%s: enter key %s", __func__, key.c_str());
-  if (mHalNxpNfc != NULL) {
+  if (mAidlHalNxpNfc != nullptr) {
+    mAidlHalNxpNfc->getVendorParam(key, &value);
+  } else if (mHalNxpNfc != NULL) {
     /* Synchronous HIDL call, will be returned only after
      * HalGetProperty_cb() is called from HAL*/
     mHalNxpNfc->getVendorParam(key, HalGetProperty_cb);
@@ -434,7 +441,9 @@ string NfcAdaptation::HalGetProperty(string key) {
  *******************************************************************************/
 bool NfcAdaptation::HalSetProperty(string key, string value) {
   bool status = false;
-  if (mHalNxpNfc != NULL) {
+  if (mAidlHalNxpNfc != nullptr) {
+    mAidlHalNxpNfc->setVendorParam(key, value, &status);
+  } else if (mHalNxpNfc != NULL) {
     status = mHalNxpNfc->setVendorParam(key, value);
   } else {
     LOG(INFO) << StringPrintf("%s: mHalNxpNfc is NULL", __func__);
@@ -855,7 +864,39 @@ uint32_t NfcAdaptation::Thread(__attribute__((unused)) uint32_t arg) {
 **
 *******************************************************************************/
 tHAL_NFC_ENTRY* NfcAdaptation::GetHalEntryFuncs() { return &mHalEntryFuncs; }
+#if (NXP_EXTNS == TRUE)
+/*******************************************************************************
+**
+** Function:    NfcAdaptation::InitializeAidlHalContext
+**
+** Description: Get the NxpNfc interface Service
+**
+** Returns:     None.
+**
+*******************************************************************************/
+void NfcAdaptation::InitializeAidlHalContext() {
+  const char* func = "NfcAdaptation::InitializeAidlHalContext";
+  LOG(VERBOSE) << StringPrintf("%s", func);
+  ::ndk::SpAIBinder binder(
 
+      AServiceManager_checkService(NXPNFC_AIDL_HAL_SERVICE_NAME.c_str()));
+  mAidlHalNxpNfc = INxpNfcAidl::fromBinder(binder);
+  if (mAidlHalNxpNfc == nullptr) {
+    LOG(INFO) << StringPrintf("%s: INxpNfc::tryGetService()", func);
+    mHalNxpNfc = INxpNfc::tryGetService();
+    if (mHalNxpNfc != nullptr) {
+      LOG(VERBOSE) << StringPrintf("%s: INxpNfc::getService() returned %p (%s)",
+                                 func, mHalNxpNfc.get(),
+                                 (mHalNxpNfc->isRemote() ? "remote" : "local"));
+    }
+  } else {
+    mHalNxpNfc = nullptr;
+    LOG(INFO) << StringPrintf("%s: INxpNfcAidl::fromBinder returned", func);
+    LOG_FATAL_IF(mAidlHalNxpNfc == nullptr,
+                 "Failed to retrieve the NXPNFC AIDL!");
+  }
+}
+#endif
 /*******************************************************************************
 **
 ** Function:    NfcAdaptation::InitializeHalDeviceContext
@@ -878,15 +919,6 @@ void NfcAdaptation::InitializeHalDeviceContext() {
   mHalEntryFuncs.control_granted = HalControlGranted;
   mHalEntryFuncs.power_cycle = HalPowerCycle;
   mHalEntryFuncs.get_max_ee = HalGetMaxNfcee;
-#if (NXP_EXTNS == TRUE)
-  LOG(INFO) << StringPrintf("%s: INxpNfc::tryGetService()", func);
-  mHalNxpNfc = INxpNfc::tryGetService();
-  if (mHalNxpNfc != nullptr) {
-    LOG(INFO) << StringPrintf("%s: INxpNfc::getService() returned %p (%s)",
-                              func, mHalNxpNfc.get(),
-                              (mHalNxpNfc->isRemote() ? "remote" : "local"));
-  }
-#endif
   LOG(INFO) << StringPrintf("%s: INfc::getService()", func);
   mAidlHal = nullptr;
   mHal = mHal_1_1 = mHal_1_2 = nullptr;
@@ -920,6 +952,9 @@ void NfcAdaptation::InitializeHalDeviceContext() {
     mNfcHalDeathRecipient = new NfcHalDeathRecipient(mHal);
     mHal->linkToDeath(mNfcHalDeathRecipient, 0);
   }
+#if (NXP_EXTNS == TRUE)
+  InitializeAidlHalContext();
+#endif
 }
 
 /*******************************************************************************

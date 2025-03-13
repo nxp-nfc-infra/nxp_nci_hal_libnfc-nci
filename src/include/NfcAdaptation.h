@@ -78,6 +78,15 @@ struct INxpNfc;
 }  // namespace nxpnfc
 }  // namespace nxp
 }  // namespace vendor
+namespace aidl {
+  namespace vendor {
+  namespace nxp {
+  namespace nxpnfc_aidl {
+  class INxpNfc;
+  }
+  }
+  }
+  }
 #endif
 class ThreadMutex {
  public:
@@ -159,7 +168,9 @@ class NfcAdaptation {
   static ThreadCondVar mHalCloseCompletedEvent;
 #if (NXP_EXTNS == TRUE)
   static android::sp<vendor::nxp::nxpnfc::V2_0::INxpNfc> mHalNxpNfc;
+  static std::shared_ptr<::aidl::vendor::nxp::nxpnfc_aidl::INxpNfc> mAidlHalNxpNfc;
   static sem_t mSemHalDataCallBackEvent;
+  static void InitializeAidlHalContext();
 #endif
 
   static uint32_t NFCA_TASK(uint32_t arg);
