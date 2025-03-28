@@ -1,0 +1,28 @@
+From d9dc324f369171a098af4c960c401c8db2462238 Mon Sep 17 00:00:00 2001
+From: nxf36763 <ashish.manohar@nxp.com>
+Date: Tue, 18 Mar 2025 13:28:29 +0530
+Subject: [PATCH 2/4] [artf1224455]: MW version update
+
+- MW Version update done for A15
+
+Change-Id: I32089775a096a22f351829aa4485c6caefa2d654
+---
+ src/nfc/include/nfc_api.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/nfc/include/nfc_api.h b/src/nfc/include/nfc_api.h
+index 96421f5f6..7d902f1db 100644
+--- a/src/nfc/include/nfc_api.h
++++ b/src/nfc/include/nfc_api.h
+@@ -60,7 +60,7 @@
+ #define NXP_EN_PN7222 0
+ #define NXP_EN_PN7223 0
+ #define NXP_ANDROID_VER (15U)         /* NXP android version */
+-#define NFC_NXP_MW_VERSION_MAJ (0x01) /* MW Major Version */
++#define NFC_NXP_MW_VERSION_MAJ (0x02) /* MW Major Version */
+ #define NFC_NXP_MW_VERSION_MIN (0x00) /* MW Minor Version */
+ #define NFC_NXP_MW_RC_VERSION (0x00)  /* MW RC Version */
+ #endif
+-- 
+2.49.0
+
